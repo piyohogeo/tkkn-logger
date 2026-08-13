@@ -95,7 +95,7 @@ def main() -> int:
         if sample_record not in reviewed_samples:
             reviewed_samples.append(sample_record)
     profile = {
-        "profile_version": 1,
+        "profile_version": 2,
         "reference_size": [320, 240],
         "minimum_confidence": 0.95,
         "minimum_margin": 0.05,

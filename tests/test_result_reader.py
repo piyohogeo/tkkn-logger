@@ -11,7 +11,13 @@ from tokkun99_logger.result_reader import (
     ResultConsensus,
     ResultReader,
     ResultReading,
+    GlyphComponent,
+    GlyphMatch,
     extract_glyphs,
+    extract_digit_slot,
+    has_decimal_at,
+    is_centered_digit_run,
+    select_survival_components,
     text_core_mask,
     translation_tolerant_dice,
 )
@@ -43,6 +49,62 @@ def test_extract_glyphs_orders_digit_decimal_digit() -> None:
 
     assert len(glyphs) == 3
     assert [int(np.count_nonzero(glyph)) for glyph in glyphs] == [39, 4, 52]
+
+
+def test_digit_slot_separates_digit_from_touching_suffix() -> None:
+    image = np.zeros((20, 24, 3), dtype=np.uint8)
+    image[3:16, 5:12] = 255
+    image[8:12, 12:18] = 255  # Touching suffix outside the numeric slot.
+
+    glyph = extract_digit_slot(image, expected_left=5)
+
+    assert glyph is not None
+    assert np.count_nonzero(glyph) == 13 * 7
+
+
+def test_decimal_detection_uses_geometry_not_exact_shape() -> None:
+    image = np.zeros((20, 20, 3), dtype=np.uint8)
+    image[15:17, 8:10] = 255
+    assert has_decimal_at(image, 8)
+    image[:] = 0
+    image[15, 7:10] = 255
+    assert has_decimal_at(image, 8)
+
+
+def component(left: int, *, decimal: bool = False) -> GlyphComponent:
+    return GlyphComponent(left, left + (2 if decimal else 6), decimal, np.zeros((18, 12), bool))
+
+
+@pytest.mark.parametrize(
+    ("digits", "first_left", "decimal_left"),
+    [(1, 49, 59), (2, 45, 63), (3, 41, 67), (4, 37, 71)],
+)
+def test_survival_layout_accepts_one_to_four_integer_digits(
+    digits: int, first_left: int, decimal_left: int
+) -> None:
+    integer = [component(first_left + 8 * index) for index in range(digits)]
+    fractional = [component(decimal_left + 6 + 8 * index) for index in range(3)]
+
+    selected = select_survival_components([*integer, component(decimal_left, decimal=True), *fractional])
+
+    assert len(selected) == digits + 4
+
+
+@pytest.mark.parametrize("digits", [1, 2, 3, 4])
+def test_bullet_layout_accepts_one_to_four_centered_digits(digits: int) -> None:
+    first_left = 53 - 4 * digits
+    run = [
+        (component(first_left + 8 * index), GlyphMatch(str(index), 1.0, 0.0))
+        for index in range(digits)
+    ]
+
+    assert is_centered_digit_run(run)
+
+
+def test_centered_digit_run_rejects_five_digits_and_wrong_anchor() -> None:
+    match = GlyphMatch("1", 1.0, 0.0)
+    assert not is_centered_digit_run([(component(45), match)])
+    assert not is_centered_digit_run([(component(33 + 8 * index), match) for index in range(5)])
 
 
 def test_local_golden_result_samples() -> None:

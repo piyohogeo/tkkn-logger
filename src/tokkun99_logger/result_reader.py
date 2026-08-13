@@ -132,29 +132,54 @@ def extract_glyphs(image: np.ndarray, allow_decimal: bool) -> list[np.ndarray]:
     return [component.glyph for component in extract_components(image, allow_decimal)]
 
 
+def extract_digit_slot(image: np.ndarray, expected_left: int) -> np.ndarray | None:
+    """Extract one digit from its fixed-width slot without joining neighboring text."""
+    slot_left = expected_left - 1
+    slot_right = expected_left + 7
+    if slot_left < 0 or slot_right > image.shape[1]:
+        return None
+    mask = text_core_mask(image)[:, slot_left:slot_right].astype(np.uint8)
+    count, labels, stats, _centroids = cv2.connectedComponentsWithStats(mask, 8)
+    candidates: list[np.ndarray] = []
+    for component in range(1, count):
+        left, top, width, height, area = map(int, stats[component])
+        if height < 8 or area < 10:
+            continue
+        glyph = labels[top : top + height, left : left + width] == component
+        if width <= 12 and height <= 16:
+            candidates.append(normalize_glyph(glyph))
+    return candidates[0] if len(candidates) == 1 else None
+
+
+def has_decimal_at(image: np.ndarray, expected_left: int) -> bool:
+    """Detect the geometric decimal marker independently of its antialiasing variant."""
+    mask = text_core_mask(image)
+    left = max(0, expected_left - 1)
+    right = min(mask.shape[1], expected_left + 4)
+    top = image.shape[0] // 2
+    return np.count_nonzero(mask[top:, left:right]) >= 3
+
+
 def select_survival_components(components: list[GlyphComponent]) -> list[GlyphComponent]:
-    # The label can contain tiny disconnected strokes. The numeric decimal is
-    # always in the value area (x>=35 within the broad line ROI).
-    decimal_indices = [
-        index
-        for index, component in enumerate(components)
-        if component.is_decimal and 55 <= component.left <= 70
-    ]
+    # The complete value is centered. Each extra integer digit moves its first
+    # digit 4 px left and the decimal point 4 px right.
+    decimal_indices = [index for index, component in enumerate(components) if component.is_decimal]
     candidates: list[list[GlyphComponent]] = []
     for decimal_index in decimal_indices:
-        before: list[GlyphComponent] = []
-        cursor = decimal_index - 1
-        next_left = components[decimal_index].left
-        while cursor >= 0:
-            component = components[cursor]
-            if component.is_decimal or next_left - component.right > 5:
-                break
-            before.append(component)
-            next_left = component.left
-            cursor -= 1
-        before.reverse()
+        decimal = components[decimal_index]
+        integer_digits = round((decimal.left - 55) / 4)
+        if not 1 <= integer_digits <= 4 or abs(decimal.left - (55 + 4 * integer_digits)) > 2:
+            continue
+        before = components[max(0, decimal_index - integer_digits) : decimal_index]
+        if len(before) != integer_digits or any(component.is_decimal for component in before):
+            continue
+        if any(
+            right.left - left.right > 5
+            for left, right in zip(before, [*before[1:], decimal])
+        ):
+            continue
         after: list[GlyphComponent] = []
-        previous_right = components[decimal_index].right
+        previous_right = decimal.right
         for component in components[decimal_index + 1 :]:
             if component.is_decimal:
                 break
@@ -164,8 +189,12 @@ def select_survival_components(components: list[GlyphComponent]) -> list[GlyphCo
             previous_right = component.right
             if len(after) == 3:
                 break
-        if before and len(after) == 3:
-            candidates.append([*before, components[decimal_index], *after])
+        expected_first = 53 - 4 * integer_digits
+        centered_layout = (
+            abs(before[0].left - expected_first) <= 2
+        )
+        if centered_layout and len(after) == 3:
+            candidates.append([*before, decimal, *after])
     return candidates[0] if len(candidates) == 1 else []
 
 
@@ -173,6 +202,15 @@ def select_bullet_components(components: list[GlyphComponent]) -> list[GlyphComp
     # The Japanese label ends before x=35 in this broad ROI. The suffix follows
     # the numeric run and is rejected later by glyph confidence.
     return [component for component in components if component.left >= 35 and not component.is_decimal]
+
+
+def is_centered_digit_run(run: list[tuple[GlyphComponent, GlyphMatch]]) -> bool:
+    """Accept one to four digits in the game's centered numeric field."""
+    digit_count = len(run)
+    if not 1 <= digit_count <= 4:
+        return False
+    expected_first = 53 - 4 * digit_count
+    return abs(run[0][0].left - expected_first) <= 2
 
 
 def dice(left: np.ndarray, right: np.ndarray) -> float:
@@ -253,44 +291,60 @@ class ResultReader:
         left, top, right, bottom = roi
         return extract_components(frame[top:bottom, left:right], allow_decimal=allow_decimal)
 
+    @staticmethod
+    def _roi_image(frame: np.ndarray, roi: tuple[int, int, int, int]) -> np.ndarray:
+        left, top, right, bottom = roi
+        return frame[top:bottom, left:right]
+
+    def _match_digit_slots(self, image: np.ndarray, positions: list[int]) -> list[GlyphMatch]:
+        matches: list[GlyphMatch] = []
+        for position in positions:
+            glyph = extract_digit_slot(image, position)
+            matches.append(GlyphMatch(None, 0.0, 0.0) if glyph is None else self.match(glyph))
+        return matches
+
     def _read_survival(self, frame: np.ndarray) -> tuple[str | None, list[GlyphMatch]]:
-        components = select_survival_components(self._roi_components(frame, self.survival_roi, True))
-        matches = [self.match(component.glyph) for component in components]
-        if not matches or any(match.label is None for match in matches):
-            return None, matches
-        return "".join(match.label or "" for match in matches), matches
+        image = self._roi_image(frame, self.survival_roi)
+        candidates: list[tuple[str, list[GlyphMatch]]] = []
+        all_matches: list[GlyphMatch] = []
+        for integer_digits in range(1, 5):
+            first = 53 - 4 * integer_digits
+            decimal = 55 + 4 * integer_digits
+            if not has_decimal_at(image, decimal):
+                continue
+            integer_positions = [first + 8 * index for index in range(integer_digits)]
+            fractional_positions = [decimal + 6 + 8 * index for index in range(3)]
+            digit_matches = self._match_digit_slots(image, integer_positions + fractional_positions)
+            matches = [*digit_matches[:integer_digits], GlyphMatch(".", 1.0, 0.0), *digit_matches[integer_digits:]]
+            all_matches.extend(matches)
+            if all(match.label is not None and match.label.isdigit() for match in digit_matches):
+                candidates.append(("".join(match.label or "" for match in matches), matches))
+        if len(candidates) != 1:
+            return None, all_matches
+        return candidates[0]
 
     def _read_bullets(self, frame: np.ndarray) -> tuple[str | None, list[GlyphMatch]]:
         candidates: list[tuple[str, list[GlyphMatch]]] = []
         all_matches: list[GlyphMatch] = []
         for roi in self.bullet_rois:
-            raw_components = self._roi_components(frame, roi, True)
+            image = self._roi_image(frame, roi)
+            raw_components = extract_components(image, True)
             value_area = [component for component in raw_components if component.left >= 35]
-            if any(component.is_decimal for component in value_area):
+            valid_decimal_positions = (59, 63, 67, 71)
+            if any(
+                component.is_decimal
+                and any(abs(component.left - position) <= 2 for position in valid_decimal_positions)
+                for component in value_area
+            ):
                 continue  # This is an auxiliary time row in the extended layout.
-            components = select_bullet_components(value_area)
-            matches = [self.match(component.glyph) for component in components]
-            all_matches.extend(matches)
-            runs: list[list[tuple[GlyphComponent, GlyphMatch]]] = []
-            current: list[tuple[GlyphComponent, GlyphMatch]] = []
-            for component, match in zip(components, matches):
-                if match.label is not None and match.label.isdigit():
-                    current.append((component, match))
-                else:
-                    if current:
-                        runs.append(current)
-                        current = []
-            if current:
-                runs.append(current)
-            for run in runs:
-                # The bullet value is horizontally anchored near x=45 in the
-                # broad ROI. Auxiliary result rows start farther right and must
-                # not become a second bullet candidate.
-                if 2 <= len(run) <= 3 and 35 <= run[0][0].left <= 50:
-                    run_matches = [match for _component, match in run]
-                    candidates.append(
-                        ("".join(match.label or "" for match in run_matches), run_matches)
-                    )
+            for digit_count in range(1, 5):
+                first = 53 - 4 * digit_count
+                matches = self._match_digit_slots(
+                    image, [first + 8 * index for index in range(digit_count)]
+                )
+                all_matches.extend(matches)
+                if all(match.label is not None and match.label.isdigit() for match in matches):
+                    candidates.append(("".join(match.label or "" for match in matches), matches))
         if len(candidates) != 1:
             return None, all_matches
         return candidates[0]

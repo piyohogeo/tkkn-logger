@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 from pathlib import Path
 import sqlite3
 import sys
@@ -15,6 +16,7 @@ DATA_ROOT = PROJECT_ROOT / "data"
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from tokkun99_logger.result_reader import ResultReader  # noqa: E402
+from tokkun99_logger.state_detector import GameState, StateClassifier  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -25,12 +27,22 @@ def parse_args() -> argparse.Namespace:
         help="Override the profile's maximum glyph translation for this evaluation",
     )
     parser.add_argument("--details", action="store_true", help="Print every mismatch")
+    parser.add_argument(
+        "--include-frame-log",
+        action="store_true",
+        help="Also evaluate experimental lossless RESULT-frame samples",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     reader = ResultReader(DATA_ROOT / "templates" / "glyphs" / "v1" / "profile.json")
+    classifier = (
+        StateClassifier(DATA_ROOT / "templates" / "states" / "v1" / "profile.json")
+        if args.include_frame_log
+        else None
+    )
     if args.maximum_shift is not None:
         if args.maximum_shift < 0:
             raise SystemExit("maximum-shift must be non-negative")
@@ -39,7 +51,7 @@ def main() -> int:
     connection.row_factory = sqlite3.Row
     rows = connection.execute(
         """
-        SELECT run_id, survival_ms, bullet_count, result_frame_path
+        SELECT run_id, started_at, survival_ms, bullet_count, result_frame_path
         FROM runs
         WHERE status = 'complete' AND result_frame_path IS NOT NULL
         ORDER BY started_at, run_id
@@ -47,24 +59,50 @@ def main() -> int:
     ).fetchall()
     exact = review = wrong_accept = 0
     mismatches = []
+    total = 0
+    skipped_non_result = 0
     for row in rows:
-        image = cv2.imread(str(DATA_ROOT / row["result_frame_path"]), cv2.IMREAD_COLOR)
-        if image is None:
-            raise FileNotFoundError(row["result_frame_path"])
-        reading = reader.read(image)
-        expected = (row["survival_ms"], row["bullet_count"])
-        actual = (reading.survival_ms, reading.bullet_count)
-        is_exact = actual == expected
-        exact += int(is_exact)
-        review += int(reading.needs_review)
-        wrong_accept += int(not reading.needs_review and not is_exact)
-        if not is_exact:
-            mismatches.append(
-                (row["run_id"], *expected, *actual, reading.needs_review, reading.confidence)
-            )
+        result_path = DATA_ROOT / row["result_frame_path"]
+        paths = [result_path]
+        if args.include_frame_log:
+            date_path = datetime.fromisoformat(row["started_at"]).strftime("%Y/%m/%d")
+            frame_directory = DATA_ROOT / "regression" / "results" / date_path / row["run_id"]
+            if frame_directory.exists():
+                paths.extend(sorted(frame_directory.glob("*.png")))
+        for path in paths:
+            image = cv2.imread(str(path), cv2.IMREAD_COLOR)
+            if image is None:
+                raise FileNotFoundError(path)
+            if (
+                path != result_path
+                and classifier is not None
+                and classifier.anchor(classifier.score(image)) != GameState.RESULT
+            ):
+                skipped_non_result += 1
+                continue
+            total += 1
+            reading = reader.read(image)
+            expected = (row["survival_ms"], row["bullet_count"])
+            actual = (reading.survival_ms, reading.bullet_count)
+            is_exact = actual == expected
+            exact += int(is_exact)
+            review += int(reading.needs_review)
+            wrong_accept += int(not reading.needs_review and not is_exact)
+            if not is_exact:
+                mismatches.append(
+                    (
+                        row["run_id"],
+                        path.relative_to(DATA_ROOT).as_posix(),
+                        *expected,
+                        *actual,
+                        reading.needs_review,
+                        reading.confidence,
+                    )
+                )
     print(
-        f"total={len(rows)} exact={exact} review={review} "
+        f"runs={len(rows)} total={total} exact={exact} review={review} "
         f"wrong_accept={wrong_accept} not_exact={len(mismatches)}"
+        + (f" skipped_non_result={skipped_non_result}" if args.include_frame_log else "")
     )
     if args.details:
         for mismatch in mismatches:

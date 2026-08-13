@@ -26,6 +26,7 @@ from tokkun99_logger.maintenance import (  # noqa: E402
     recover_partial_videos,
 )
 from tokkun99_logger.recorder import RecorderError, RunRecorder  # noqa: E402
+from tokkun99_logger.regression_frames import RegressionFrameLogger  # noqa: E402
 from tokkun99_logger.result_reader import ResultConsensus, ResultReader  # noqa: E402
 from tokkun99_logger.state_detector import DebouncedStateDetector, GameState, StateClassifier  # noqa: E402
 from tokkun99_logger.storage import RunFinalization, Storage  # noqa: E402
@@ -89,6 +90,17 @@ def parse_args() -> argparse.Namespace:
         default=10.0,
         help="Pause video after this many seconds continuously on RESULT",
     )
+    parser.add_argument(
+        "--log-result-frames",
+        action="store_true",
+        help="Experimentally save distinct RESULT frames as lossless PNG regression samples",
+    )
+    parser.add_argument(
+        "--result-frame-log-limit",
+        type=int,
+        default=300,
+        help="Maximum distinct regression PNGs retained per run",
+    )
     return parser.parse_args()
 
 
@@ -100,8 +112,12 @@ def main() -> int:
         or args.sample_every <= 0
         or args.min_free_gb < 0
         or args.result_record_seconds < 0
+        or args.result_frame_log_limit <= 0
     ):
-        raise SystemExit("duration/free space must be non-negative; fps/sample-every must be positive")
+        raise SystemExit(
+            "duration/free space must be non-negative; "
+            "fps/sample-every/result-frame-log-limit must be positive"
+        )
     enable_per_monitor_dpi_awareness()
     instance_lock = InstanceLock(DATA_ROOT / "logger.lock")
     instance_lock.acquire()
@@ -114,6 +130,11 @@ def main() -> int:
     ensure_disk_capacity(DATA_ROOT, minimum_free_bytes=minimum_free_bytes)
     message_collector = MessageCollector(storage)
     result_reader = ResultReader(GLYPH_PROFILE)
+    regression_logger = (
+        RegressionFrameLogger(DATA_ROOT / "regression" / "results", args.result_frame_log_limit)
+        if args.log_result_frames
+        else None
+    )
     detector = DebouncedStateDetector(StateClassifier(STATE_PROFILE), stable_frames=3)
     recorder = RunRecorder(
         ffmpeg_path=args.ffmpeg,
@@ -170,9 +191,16 @@ def main() -> int:
             result_frame_path=result_relative,
             message_cluster_id=current.message_cluster_id,
             capture_profile_id="mss-320x240-30fps-v1",
-            recognizer_version="state-v1+glyph-v1",
+            recognizer_version="state-v1+glyph-v2",
         )
         result = storage.finalize_run(finalization)
+        regression_frames = 0
+        if regression_logger is not None:
+            regression_frames = regression_logger.finalize(
+                status=status,
+                survival_ms=current.survival_ms,
+                bullet_count=current.bullet_count,
+            )
         retained = current.video_finalized
         if status == "complete":
             completed_runs += 1
@@ -191,6 +219,7 @@ def main() -> int:
             f"Run {current.run_id}: status={status}, survival={current.survival_ms}, "
             f"bullets={current.bullet_count}, survival_record={result.is_survival_record}, "
             f"bullet_record={result.is_bullet_record}, video_retained={retained}"
+            + (f", regression_frames={regression_frames}" if regression_logger is not None else "")
         )
         current = None
         consensus = None
@@ -252,6 +281,8 @@ def main() -> int:
                     pending_stem = artifact_stem(None, started_at, run_id)
                     video_relative = f"videos/collection/{pending_stem}.mp4"
                     current = LiveRun(run_id, started_at, video_relative)
+                    if regression_logger is not None:
+                        regression_logger.start(run_id, started_at)
                     recorder.start(DATA_ROOT / video_relative)
                     consensus = None
 
@@ -281,6 +312,8 @@ def main() -> int:
                     persist_current("complete" if complete else "needs_review")
 
             if observation.state == GameState.RESULT and consensus is not None:
+                if regression_logger is not None and observation.candidate == GameState.RESULT:
+                    regression_logger.add(image)
                 reading = result_reader.read(image)
                 consensus.add(reading)
                 if current is not None and not reading.needs_review:

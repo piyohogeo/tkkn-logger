@@ -36,7 +36,7 @@
 
 ## 状態と保存方針
 
-状態遷移は `TITLE → PLAYING → RESULT → MESSAGE → TITLE`。各状態は3フレーム連続確認後に確定します。RESULT値は5フレーム以上の合意がある場合だけ確定され、低信頼値はハイスコアを更新しません。
+状態遷移は `TITLE → PLAYING → RESULT → MESSAGE → TITLE`。各状態は3フレーム連続確認後に確定します。RESULT値は5フレーム以上の合意がある場合だけ確定され、低信頼値はハイスコアを更新しません。この合意確認は画面遷移中の誤確定を防ぐ安全策であり、静止しているRESULTの文字を複数フレームから復元する処理ではありません。
 
 動画モード:
 
@@ -95,6 +95,21 @@ cd "$env:USERPROFILE\src\tkkn-logger"
 完走ファイル名の例は `000000040624ms_2026-08-13_15-40-35+0900_<run-id>.mp4`。先頭12桁は生存ミリ秒なので、エクスプローラーの名前順で生存時間順に並びます。日時はプレイ開始時刻とUTCオフセットです。RESULT画像は同じ名前の末尾に `_result.png` が付きます。生存時間未確定の途中終了動画は `unknown_日時_<run-id>.mp4` になります。
 
 RESULTを表示したままにすると、既定では10秒後に録画だけを一時停止します。状態検出とスコア認識は継続し、MESSAGEへ進むと録画を再開してMESSAGE画面を含めた後に確定終了します。時間は `--result-record-seconds 15` のように変更できます。
+
+数字認識の回帰評価用にRESULTフレームを収集する実験オプションがあります。`--log-result-frames` を付けると、RESULT状態アンカーと一致し、かつ画素が異なるフレームだけを可逆圧縮PNGとして `data/regression/results/YYYY/MM/DD/<run-id>` に保存します。静止画は重複保存しないため通常は1枚です。容量を制限するため1runあたり既定で最大300枚とし、上限は `--result-frame-log-limit 100` のように変更できます。通常起動では無効です。
+
+```powershell
+cd scripts
+.\run_logger_regression.cmd
+```
+
+収集したフレームを通常のRESULT画像と一緒に評価するには、次を実行します。
+
+```powershell
+.\.venv\Scripts\python.exe scripts\evaluate_result_reader.py --include-frame-log
+```
+
+RESULTの数値欄は中央揃えの可変長として解析します。生存時間の整数部と弾数は1～4桁に対応し、生存時間の小数部は常に3桁として扱います。未対応の5桁以上や配置が一致しない画面は、誤った値を確定せずレビュー対象にします。
 
 ## バックアップ
 
