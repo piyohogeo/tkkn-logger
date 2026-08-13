@@ -168,7 +168,7 @@ def test_local_live_smoke_result_samples() -> None:
             assert (reading.survival_ms, reading.bullet_count) == scores
 
 
-def test_result_consensus_requires_five_agreeing_frames() -> None:
+def test_result_consensus_honors_configured_agreement_count() -> None:
     reading = ResultReading("1.024", 1024, "50", 50, 1.0, 0, False)
     consensus = ResultConsensus(required_frames=5)
     for _ in range(4):
@@ -178,6 +178,18 @@ def test_result_consensus_requires_five_agreeing_frames() -> None:
     consensus.add(reading)
     resolved = consensus.resolve()
     assert resolved.is_confirmed is True
+    assert resolved.reading == reading
+
+
+def test_result_consensus_can_confirm_one_valid_frame_after_state_debounce() -> None:
+    reading = ResultReading("1.024", 1024, "50", 50, 1.0, 0, False)
+    consensus = ResultConsensus(required_frames=1)
+
+    consensus.add(reading)
+
+    resolved = consensus.resolve()
+    assert resolved.is_confirmed is True
+    assert resolved.agreeing_frames == 1
     assert resolved.reading == reading
 
 

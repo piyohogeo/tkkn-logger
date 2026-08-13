@@ -60,7 +60,7 @@ def main() -> int:
                 consensus = None
             elif observation.changed and observation.state == GameState.RESULT and current_run is not None:
                 current_run["result_index"] = event["index"]
-                consensus = ResultConsensus(required_frames=5)
+                consensus = ResultConsensus(required_frames=1)
             elif observation.changed and observation.state == GameState.MESSAGE and current_run is not None:
                 resolved = consensus.resolve() if consensus is not None else None
                 current_run["message_index"] = event["index"]

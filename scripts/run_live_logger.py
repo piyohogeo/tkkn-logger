@@ -288,7 +288,10 @@ def main() -> int:
 
                 elif observation.state == GameState.RESULT and current is not None:
                     current.result_image = image.copy()
-                    consensus = ResultConsensus(required_frames=5)
+                    # RESULT itself has already passed the state detector's
+                    # three-frame debounce. One valid score read is enough;
+                    # requiring five additional frames rejects quick advances.
+                    consensus = ResultConsensus(required_frames=1)
 
                 elif observation.state == GameState.MESSAGE and current is not None:
                     resolved = consensus.resolve() if consensus is not None else None
