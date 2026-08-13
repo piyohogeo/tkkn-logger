@@ -20,6 +20,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 from tokkun99_logger.message_collector import MessageCollector  # noqa: E402
 from tokkun99_logger.maintenance import (  # noqa: E402
     InstanceLock,
+    artifact_stem,
     discard_detached_video,
     ensure_disk_capacity,
     recover_partial_videos,
@@ -125,14 +126,25 @@ def main() -> int:
         if current is None:
             return
         ended_at = now_iso()
+        stem = artifact_stem(current.survival_ms, current.started_at, current.run_id)
         result_relative = None
         if current.result_image is not None:
-            date_path = datetime.now().astimezone().strftime("%Y/%m/%d")
-            result_relative = f"runs/{date_path}/{current.run_id}/result.png"
+            date_path = datetime.fromisoformat(current.started_at).strftime("%Y/%m/%d")
+            result_relative = f"runs/{date_path}/{stem}_result.png"
             result_path = DATA_ROOT / result_relative
             result_path.parent.mkdir(parents=True, exist_ok=True)
             if not cv2.imwrite(str(result_path), current.result_image):
                 raise OSError(f"Could not write {result_path}")
+        if current.video_finalized and current.survival_ms is not None:
+            old_video = (DATA_ROOT / current.video_relative).resolve()
+            new_relative = f"videos/collection/{stem}.mp4"
+            new_video = (DATA_ROOT / new_relative).resolve()
+            if old_video != new_video:
+                new_video.parent.mkdir(parents=True, exist_ok=True)
+                if new_video.exists():
+                    raise FileExistsError(new_video)
+                old_video.replace(new_video)
+                current.video_relative = new_relative
         finalization = RunFinalization(
             run_id=current.run_id,
             started_at=current.started_at,
@@ -198,14 +210,17 @@ def main() -> int:
                     ensure_disk_capacity(DATA_ROOT, minimum_free_bytes=minimum_free_bytes)
                     if current is not None:
                         if recorder.active:
-                            incomplete = DATA_ROOT / "videos" / "incomplete" / f"{current.run_id}.mp4"
+                            incomplete_stem = artifact_stem(None, current.started_at, current.run_id)
+                            incomplete = DATA_ROOT / "videos" / "incomplete" / f"{incomplete_stem}.mp4"
                             recorder.finalize_incomplete(incomplete)
                             current.video_relative = incomplete.relative_to(DATA_ROOT).as_posix()
                             current.video_finalized = True
                         persist_current("incomplete")
                     run_id = str(uuid.uuid4())
-                    video_relative = f"videos/collection/{run_id}.mp4"
-                    current = LiveRun(run_id, now_iso(), video_relative)
+                    started_at = now_iso()
+                    pending_stem = artifact_stem(None, started_at, run_id)
+                    video_relative = f"videos/collection/{pending_stem}.mp4"
+                    current = LiveRun(run_id, started_at, video_relative)
                     recorder.start(DATA_ROOT / video_relative)
                     consensus = None
 
@@ -243,7 +258,8 @@ def main() -> int:
         print(f"Live logger error: {type(exc).__name__}: {exc}")
         if current is not None:
             if recorder.active:
-                incomplete = DATA_ROOT / "videos" / "incomplete" / f"{current.run_id}.mp4"
+                incomplete_stem = artifact_stem(None, current.started_at, current.run_id)
+                incomplete = DATA_ROOT / "videos" / "incomplete" / f"{incomplete_stem}.mp4"
                 recorder.finalize_incomplete(incomplete)
                 current.video_relative = incomplete.relative_to(DATA_ROOT).as_posix()
                 current.video_finalized = True
@@ -255,7 +271,8 @@ def main() -> int:
 
     if current is not None:
         if recorder.active:
-            incomplete = DATA_ROOT / "videos" / "incomplete" / f"{current.run_id}.mp4"
+            incomplete_stem = artifact_stem(None, current.started_at, current.run_id)
+            incomplete = DATA_ROOT / "videos" / "incomplete" / f"{incomplete_stem}.mp4"
             recorder.finalize_incomplete(incomplete)
             current.video_relative = incomplete.relative_to(DATA_ROOT).as_posix()
             current.video_finalized = True

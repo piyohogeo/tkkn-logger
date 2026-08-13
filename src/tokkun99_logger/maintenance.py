@@ -6,9 +6,27 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 import os
+import re
 import shutil
 
 from .storage import Storage
+
+
+SAFE_RUN_ID = re.compile(r"^[A-Za-z0-9-]+$")
+
+
+def artifact_stem(survival_ms: int | None, started_at: str, run_id: str) -> str:
+    """Build a Windows-safe name sortable by survival time, then start datetime."""
+    if survival_ms is not None and survival_ms < 0:
+        raise ValueError("survival_ms must be non-negative")
+    if not SAFE_RUN_ID.fullmatch(run_id):
+        raise ValueError(f"Unsafe run_id for file name: {run_id}")
+    started = datetime.fromisoformat(started_at)
+    if started.tzinfo is None:
+        raise ValueError("started_at must include a timezone")
+    score = f"{survival_ms:012d}ms" if survival_ms is not None else "unknown"
+    timestamp = started.strftime("%Y-%m-%d_%H-%M-%S%z")
+    return f"{score}_{timestamp}_{run_id}"
 
 
 @dataclass(frozen=True)

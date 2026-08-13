@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sqlite3
 
 import cv2
 import numpy as np
@@ -64,8 +65,8 @@ def test_local_golden_result_samples() -> None:
 def test_local_live_smoke_result_samples() -> None:
     project = Path(__file__).resolve().parents[1]
     profile = project / "data" / "templates" / "glyphs" / "v1" / "profile.json"
-    runs = project / "data" / "runs" / "2026" / "08" / "13"
-    if not profile.exists() or not runs.exists():
+    database = project / "data" / "logger.sqlite3"
+    if not profile.exists() or not database.exists():
         pytest.skip("Local live-smoke fixtures are intentionally not versioned")
     reader = ResultReader(profile)
     expected = {
@@ -76,13 +77,18 @@ def test_local_live_smoke_result_samples() -> None:
         "1be607b9-3fd5-41ac-b27e-d872598c342a": (8225, 52),
         "416bc679-e40d-45b6-8dd4-5a8e67f34420": (13047, 51),
     }
-    for run_id, scores in expected.items():
-        frame_path = runs / run_id / "result.png"
-        frame = cv2.imread(str(frame_path), cv2.IMREAD_COLOR)
-        assert frame is not None, frame_path
-        reading = reader.read(frame)
-        assert reading.needs_review is False
-        assert (reading.survival_ms, reading.bullet_count) == scores
+    with sqlite3.connect(database) as connection:
+        for run_id, scores in expected.items():
+            row = connection.execute(
+                "SELECT result_frame_path FROM runs WHERE run_id = ?", (run_id,)
+            ).fetchone()
+            assert row is not None and row[0]
+            frame_path = project / "data" / row[0]
+            frame = cv2.imread(str(frame_path), cv2.IMREAD_COLOR)
+            assert frame is not None, frame_path
+            reading = reader.read(frame)
+            assert reading.needs_review is False
+            assert (reading.survival_ms, reading.bullet_count) == scores
 
 
 def test_result_consensus_requires_five_agreeing_frames() -> None:

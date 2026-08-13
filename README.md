@@ -82,15 +82,17 @@ cd "$env:USERPROFILE\src\tkkn-logger"
 ## データ保存先
 
 - `data/logger.sqlite3`: run、スコア、記録履歴、メッセージ、訂正イベント
-- `data/videos/collection`: 保持対象の完走動画
+- `data/videos/collection`: 保持対象の完走動画。ファイル名は生存時間・日付・時刻順
 - `data/videos/incomplete`: 途中終了・異常終了動画
 - `data/videos/incomplete/recovered`: 起動時に発見した放棄partial
-- `data/runs/YYYY/MM/DD/<run-id>/result.png`: RESULT確認画像
+- `data/runs/YYYY/MM/DD`: RESULT確認画像。ファイル名は生存時間・日付・時刻順
 - `data/messages/clusters`: メッセージ代表画像
 - `data/templates`: 状態・数字テンプレート
 - `artifacts/calibration`: キャリブレーション結果
 
 ロガーは二重起動を拒否します。突然終了後に残った `.partial.mp4` は、次回起動時に削除せず `recovered` へ移動します。
+
+完走ファイル名の例は `000000040624ms_2026-08-13_15-40-35+0900_<run-id>.mp4`。先頭12桁は生存ミリ秒なので、エクスプローラーの名前順で生存時間順に並びます。日時はプレイ開始時刻とUTCオフセットです。RESULT画像は同じ名前の末尾に `_result.png` が付きます。生存時間未確定の途中終了動画は `unknown_日時_<run-id>.mp4` になります。
 
 ## バックアップ
 

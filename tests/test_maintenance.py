@@ -6,11 +6,29 @@ import pytest
 
 from tokkun99_logger.maintenance import (
     InstanceLock,
+    artifact_stem,
     discard_detached_video,
     ensure_disk_capacity,
     recover_partial_videos,
 )
 from tokkun99_logger.storage import RunFinalization, Storage
+
+
+def test_artifact_stem_sorts_by_survival_and_contains_datetime() -> None:
+    earlier_score = artifact_stem(
+        5520, "2026-08-13T15:42:21.789455+09:00", "a872f26d-edce-4ed5-87c2-be2476523d15"
+    )
+    later_score = artifact_stem(
+        40624, "2026-08-13T15:40:35.732226+09:00", "c7caa9b2-1924-47a1-88d3-7f75f4d5392a"
+    )
+
+    assert earlier_score == (
+        "000000005520ms_2026-08-13_15-42-21+0900_a872f26d-edce-4ed5-87c2-be2476523d15"
+    )
+    assert earlier_score < later_score
+    assert artifact_stem(None, "2026-08-13T15:42:21+09:00", "run-1").startswith(
+        "unknown_2026-08-13_15-42-21+0900_"
+    )
 
 
 def test_recover_partial_videos_moves_to_quarantine(tmp_path: Path) -> None:
