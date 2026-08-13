@@ -1,0 +1,17 @@
+# Superseded proposal: Conda base has a broken _ssl DLL, so the approved
+# fallback uses .venv + requirements-lock.txt instead. Do not create this env.
+name: tokkun99_logger
+channels:
+  - defaults
+dependencies:
+  - python=3.10.18
+  - pip=25.1
+  - pip:
+      - numpy==1.26.4
+      - opencv-python==4.11.0.86
+      - mss==10.2.0
+      - pywin32==312
+      - pytest==9.0.2
+variables:
+  # Prevent packages in %APPDATA%\Python\Python310 from shadowing this env.
+  PYTHONNOUSERSITE: "1"
