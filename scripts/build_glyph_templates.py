@@ -99,6 +99,7 @@ def main() -> int:
         "reference_size": [320, 240],
         "minimum_confidence": 0.95,
         "minimum_margin": 0.05,
+        "maximum_shift": 1,
         "rois": PROFILE_ROIS,
         "templates": {label: sorted(paths) for label, paths in sorted(template_paths.items())},
         "source": {"session_ids": sorted(session_ids), "reviewed_samples": reviewed_samples},

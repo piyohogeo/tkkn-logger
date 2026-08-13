@@ -64,3 +64,46 @@ def test_recorder_rejects_wrong_frame_size() -> None:
 
     with pytest.raises(ValueError, match="BGR bytes"):
         recorder.observe(b"too short")
+
+
+@pytest.mark.skipif(not FFMPEG.is_file() or not FFPROBE.is_file(), reason="Local FFmpeg is unavailable")
+def test_pause_keeps_process_open_and_resume_appends_frames(tmp_path) -> None:
+    recorder = RunRecorder(
+        ffmpeg_path=FFMPEG,
+        width=16,
+        height=16,
+        fps=5,
+        pre_roll_seconds=0,
+    )
+    frame = bytes([255, 255, 255]) * (16 * 16)
+    output = tmp_path / "paused.mp4"
+    recorder.start(output)
+    recorder.observe(frame)
+    recorder.pause()
+    assert recorder.active is True
+    assert recorder.paused is True
+    for _ in range(20):
+        recorder.observe(frame)
+    assert recorder.frames_written == 1
+    recorder.resume()
+    recorder.observe(frame)
+    recorder.finalize()
+
+    probe = subprocess.run(
+        [
+            FFPROBE,
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=nb_frames",
+            "-of",
+            "default=noprint_wrappers=1",
+            output,
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "nb_frames=2" in probe.stdout

@@ -136,7 +136,9 @@ def select_survival_components(components: list[GlyphComponent]) -> list[GlyphCo
     # The label can contain tiny disconnected strokes. The numeric decimal is
     # always in the value area (x>=35 within the broad line ROI).
     decimal_indices = [
-        index for index, component in enumerate(components) if component.is_decimal and component.left >= 35
+        index
+        for index, component in enumerate(components)
+        if component.is_decimal and 55 <= component.left <= 70
     ]
     candidates: list[list[GlyphComponent]] = []
     for decimal_index in decimal_indices:
@@ -180,6 +182,28 @@ def dice(left: np.ndarray, right: np.ndarray) -> float:
     return float(2 * np.count_nonzero(left & right) / denominator)
 
 
+def shifted_mask(mask: np.ndarray, horizontal: int, vertical: int) -> np.ndarray:
+    """Translate a mask with zero fill and no wraparound."""
+    shifted = np.zeros_like(mask)
+    destination_y = slice(max(0, vertical), min(mask.shape[0], mask.shape[0] + vertical))
+    destination_x = slice(max(0, horizontal), min(mask.shape[1], mask.shape[1] + horizontal))
+    source_y = slice(max(0, -vertical), min(mask.shape[0], mask.shape[0] - vertical))
+    source_x = slice(max(0, -horizontal), min(mask.shape[1], mask.shape[1] - horizontal))
+    shifted[destination_y, destination_x] = mask[source_y, source_x]
+    return shifted
+
+
+def translation_tolerant_dice(left: np.ndarray, right: np.ndarray, maximum_shift: int) -> float:
+    """Return the best Dice score after a small translation of the observed glyph."""
+    if maximum_shift < 0:
+        raise ValueError("maximum_shift must be non-negative")
+    return max(
+        dice(shifted_mask(left, horizontal, vertical), right)
+        for vertical in range(-maximum_shift, maximum_shift + 1)
+        for horizontal in range(-maximum_shift, maximum_shift + 1)
+    )
+
+
 class ResultReader:
     def __init__(self, profile_path: Path) -> None:
         profile_path = profile_path.resolve()
@@ -187,6 +211,7 @@ class ResultReader:
         self.reference_size = tuple(profile["reference_size"])
         self.minimum_confidence = float(profile["minimum_confidence"])
         self.minimum_margin = float(profile["minimum_margin"])
+        self.maximum_shift = int(profile.get("maximum_shift", 1))
         self.survival_roi = tuple(profile["rois"]["survival"])
         bullet_rois = profile["rois"]["bullets"]
         if bullet_rois and isinstance(bullet_rois[0], int):
@@ -206,7 +231,13 @@ class ResultReader:
     def match(self, glyph: np.ndarray) -> GlyphMatch:
         label_scores = sorted(
             (
-                (max(dice(glyph, template) for template in variants), label)
+                (
+                    max(
+                        translation_tolerant_dice(glyph, template, self.maximum_shift)
+                        for template in variants
+                    ),
+                    label,
+                )
                 for label, variants in self.templates.items()
             ),
             reverse=True,
@@ -240,11 +271,11 @@ class ResultReader:
             components = select_bullet_components(value_area)
             matches = [self.match(component.glyph) for component in components]
             all_matches.extend(matches)
-            runs: list[list[GlyphMatch]] = []
-            current: list[GlyphMatch] = []
-            for match in matches:
+            runs: list[list[tuple[GlyphComponent, GlyphMatch]]] = []
+            current: list[tuple[GlyphComponent, GlyphMatch]] = []
+            for component, match in zip(components, matches):
                 if match.label is not None and match.label.isdigit():
-                    current.append(match)
+                    current.append((component, match))
                 else:
                     if current:
                         runs.append(current)
@@ -252,8 +283,14 @@ class ResultReader:
             if current:
                 runs.append(current)
             for run in runs:
-                if 1 <= len(run) <= 3:
-                    candidates.append(("".join(match.label or "" for match in run), run))
+                # The bullet value is horizontally anchored near x=45 in the
+                # broad ROI. Auxiliary result rows start farther right and must
+                # not become a second bullet candidate.
+                if 2 <= len(run) <= 3 and 35 <= run[0][0].left <= 50:
+                    run_matches = [match for _component, match in run]
+                    candidates.append(
+                        ("".join(match.label or "" for match in run_matches), run_matches)
+                    )
         if len(candidates) != 1:
             return None, all_matches
         return candidates[0]

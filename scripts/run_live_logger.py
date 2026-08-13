@@ -83,12 +83,24 @@ def parse_args() -> argparse.Namespace:
         help="In collect_samples mode, retain every Nth completed non-record video",
     )
     parser.add_argument("--min-free-gb", type=float, default=2.0)
+    parser.add_argument(
+        "--result-record-seconds",
+        type=float,
+        default=10.0,
+        help="Pause video after this many seconds continuously on RESULT",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    if args.duration < 0 or args.fps <= 0 or args.sample_every <= 0 or args.min_free_gb < 0:
+    if (
+        args.duration < 0
+        or args.fps <= 0
+        or args.sample_every <= 0
+        or args.min_free_gb < 0
+        or args.result_record_seconds < 0
+    ):
         raise SystemExit("duration/free space must be non-negative; fps/sample-every must be positive")
     enable_per_monitor_dpi_awareness()
     instance_lock = InstanceLock(DATA_ROOT / "logger.lock")
@@ -118,11 +130,12 @@ def main() -> int:
     next_frame = started
     last_window_refresh = 0.0
     completed_runs = 0
+    result_started_elapsed: float | None = None
     interval = 1.0 / args.fps
     print("Live logger started (observation only; no input injection).")
 
     def persist_current(status: str) -> None:
-        nonlocal current, consensus, completed_runs
+        nonlocal current, consensus, completed_runs, result_started_elapsed
         if current is None:
             return
         ended_at = now_iso()
@@ -181,6 +194,7 @@ def main() -> int:
         )
         current = None
         consensus = None
+        result_started_elapsed = None
 
     try:
         while args.duration == 0 or time.perf_counter() - started < args.duration:
@@ -198,8 +212,25 @@ def main() -> int:
 
             bgra = capture.grab()
             image = np.frombuffer(bgra, dtype=np.uint8).reshape(240, 320, 4)[:, :, :3].copy()
-            recorder.observe(image.tobytes())
             observation = detector.observe(image)
+            if observation.changed:
+                result_started_elapsed = elapsed if observation.state == GameState.RESULT else None
+            if recorder.active:
+                result_pause_due = (
+                    observation.state == GameState.RESULT
+                    and result_started_elapsed is not None
+                    and elapsed - result_started_elapsed >= args.result_record_seconds
+                )
+                if result_pause_due and not recorder.paused:
+                    recorder.pause()
+                    print(
+                        f"{elapsed:8.2f}s recording paused after "
+                        f"{args.result_record_seconds:g}s on RESULT"
+                    )
+                elif observation.state != GameState.RESULT and recorder.paused:
+                    recorder.resume()
+                    print(f"{elapsed:8.2f}s recording resumed on {observation.state.value}")
+            recorder.observe(image.tobytes())
             if observation.changed:
                 print(
                     f"{elapsed:8.2f}s state={observation.state.value} "
@@ -250,7 +281,10 @@ def main() -> int:
                     persist_current("complete" if complete else "needs_review")
 
             if observation.state == GameState.RESULT and consensus is not None:
-                consensus.add(result_reader.read(image))
+                reading = result_reader.read(image)
+                consensus.add(reading)
+                if current is not None and not reading.needs_review:
+                    current.result_image = image.copy()
             next_frame += interval
     except KeyboardInterrupt:
         print("Interrupted by user; retaining active run as incomplete.")

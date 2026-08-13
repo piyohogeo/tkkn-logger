@@ -39,6 +39,7 @@ class RunRecorder:
         self.partial_path: Path | None = None
         self.final_path: Path | None = None
         self.frames_written = 0
+        self.paused = False
 
     @property
     def active(self) -> bool:
@@ -52,9 +53,22 @@ class RunRecorder:
         """Keep pre-roll while idle, or write directly while recording."""
         self._validate_frame(frame)
         if self.active:
-            self.write(frame)
+            if not self.paused:
+                self.write(frame)
         else:
             self.pre_roll.append(frame)
+
+    def pause(self) -> None:
+        """Stop appending frames without closing the active FFmpeg process."""
+        if not self.active:
+            raise RecorderError("Recorder is not active")
+        self.paused = True
+
+    def resume(self) -> None:
+        """Resume appending frames to an active recording."""
+        if not self.active:
+            raise RecorderError("Recorder is not active")
+        self.paused = False
 
     def start(self, final_path: Path) -> None:
         if self.active:
@@ -107,6 +121,7 @@ class RunRecorder:
         self.partial_path = partial_path
         self.final_path = final_path
         self.frames_written = 0
+        self.paused = False
         buffered = list(self.pre_roll)
         self.pre_roll.clear()
         try:
@@ -136,6 +151,7 @@ class RunRecorder:
         return_code = process.wait(timeout=30)
         stderr = process.stderr.read().decode("utf-8", errors="replace") if process.stderr else ""
         self.process = None
+        self.paused = False
         return return_code, stderr
 
     def finalize(self) -> Path:

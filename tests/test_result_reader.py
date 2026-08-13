@@ -13,6 +13,7 @@ from tokkun99_logger.result_reader import (
     ResultReading,
     extract_glyphs,
     text_core_mask,
+    translation_tolerant_dice,
 )
 
 
@@ -20,6 +21,16 @@ def test_text_core_mask_rejects_saturated_bullets() -> None:
     image = np.array([[[255, 255, 255], [0, 0, 255], [0, 255, 255]]], dtype=np.uint8)
 
     assert text_core_mask(image).tolist() == [[True, False, False]]
+
+
+def test_translation_tolerant_dice_recovers_one_pixel_alignment_error() -> None:
+    template = np.zeros((6, 6), dtype=bool)
+    template[2:5, 2:4] = True
+    observed = np.zeros_like(template)
+    observed[1:4, 2:4] = True
+
+    assert translation_tolerant_dice(observed, template, 0) < 1.0
+    assert translation_tolerant_dice(observed, template, 1) == 1.0
 
 
 def test_extract_glyphs_orders_digit_decimal_digit() -> None:
@@ -76,6 +87,10 @@ def test_local_live_smoke_result_samples() -> None:
         "f4948549-faaa-4c47-9a5b-454a1bdbd953": (37488, 56),
         "1be607b9-3fd5-41ac-b27e-d872598c342a": (8225, 52),
         "416bc679-e40d-45b6-8dd4-5a8e67f34420": (13047, 51),
+        # Three-row RESULT layout: the lower auxiliary metric must not become
+        # a second bullet candidate, and a leading bullet digit cannot vanish.
+        "64ce470d-2412-4a52-8a06-f937c9b40ff1": (41968, 60),
+        "a88d9184-5c9a-44f1-8b5c-125bb2bda1d9": (21360, 56),
     }
     with sqlite3.connect(database) as connection:
         for run_id, scores in expected.items():
