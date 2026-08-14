@@ -198,6 +198,11 @@ def select_survival_components(components: list[GlyphComponent]) -> list[GlyphCo
     return candidates[0] if len(candidates) == 1 else []
 
 
+def is_auxiliary_time_row(components: list[GlyphComponent]) -> bool:
+    """Return whether a bullet ROI contains a complete centered time value."""
+    return bool(select_survival_components(components))
+
+
 def select_bullet_components(components: list[GlyphComponent]) -> list[GlyphComponent]:
     # The Japanese label ends before x=35 in this broad ROI. The suffix follows
     # the numeric run and is rejected later by glyph confidence.
@@ -329,13 +334,7 @@ class ResultReader:
         for roi in self.bullet_rois:
             image = self._roi_image(frame, roi)
             raw_components = extract_components(image, True)
-            value_area = [component for component in raw_components if component.left >= 35]
-            valid_decimal_positions = (59, 63, 67, 71)
-            if any(
-                component.is_decimal
-                and any(abs(component.left - position) <= 2 for position in valid_decimal_positions)
-                for component in value_area
-            ):
+            if is_auxiliary_time_row(raw_components):
                 continue  # This is an auxiliary time row in the extended layout.
             for digit_count in range(1, 5):
                 first = 53 - 4 * digit_count

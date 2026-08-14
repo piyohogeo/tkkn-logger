@@ -16,6 +16,7 @@ from tokkun99_logger.result_reader import (
     extract_glyphs,
     extract_digit_slot,
     has_decimal_at,
+    is_auxiliary_time_row,
     is_centered_digit_run,
     select_survival_components,
     text_core_mask,
@@ -88,6 +89,24 @@ def test_survival_layout_accepts_one_to_four_integer_digits(
     selected = select_survival_components([*integer, component(decimal_left, decimal=True), *fractional])
 
     assert len(selected) == digits + 4
+
+
+def test_bullet_suffix_dot_is_not_an_auxiliary_time_row() -> None:
+    components = [component(45), component(53), component(66, decimal=True)]
+
+    assert not is_auxiliary_time_row(components)
+
+
+def test_complete_centered_time_is_an_auxiliary_time_row() -> None:
+    components = [
+        component(49),
+        component(59, decimal=True),
+        component(65),
+        component(73),
+        component(81),
+    ]
+
+    assert is_auxiliary_time_row(components)
 
 
 @pytest.mark.parametrize("digits", [1, 2, 3, 4])
