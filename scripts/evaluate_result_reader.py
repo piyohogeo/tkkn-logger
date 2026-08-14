@@ -37,9 +37,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    reader = ResultReader(DATA_ROOT / "templates" / "glyphs" / "v1" / "profile.json")
+    reader = ResultReader(DATA_ROOT / "template" / "glyphs" / "v1" / "profile.json")
     classifier = (
-        StateClassifier(DATA_ROOT / "templates" / "states" / "v1" / "profile.json")
+        StateClassifier(DATA_ROOT / "template" / "states" / "v1" / "profile.json")
         if args.include_frame_log
         else None
     )
@@ -47,7 +47,7 @@ def main() -> int:
         if args.maximum_shift < 0:
             raise SystemExit("maximum-shift must be non-negative")
         reader.maximum_shift = args.maximum_shift
-    connection = sqlite3.connect(DATA_ROOT / "logger.sqlite3")
+    connection = sqlite3.connect(DATA_ROOT / "log" / "logger.sqlite3")
     connection.row_factory = sqlite3.Row
     rows = connection.execute(
         """
@@ -66,7 +66,7 @@ def main() -> int:
         paths = [result_path]
         if args.include_frame_log:
             date_path = datetime.fromisoformat(row["started_at"]).strftime("%Y/%m/%d")
-            frame_directory = DATA_ROOT / "regression" / "results" / date_path / row["run_id"]
+            frame_directory = DATA_ROOT / "log" / "regression" / "results" / date_path / row["run_id"]
             if frame_directory.exists():
                 paths.extend(sorted(frame_directory.glob("*.png")))
         for path in paths:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
 import json
 import os
 from pathlib import Path
@@ -23,8 +22,7 @@ def relative_target(kind: str, row) -> str:
     if kind == "video":
         old_parent = Path(row["video_path"]).parent.as_posix()
         return f"{old_parent}/{stem}.mp4"
-    date_path = datetime.fromisoformat(row["started_at"]).strftime("%Y/%m/%d")
-    return f"runs/{date_path}/{stem}_result.png"
+    return f"collection/runs/{stem}_result.png"
 
 
 def checked_path(relative: str) -> Path:
@@ -60,7 +58,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true", help="Perform the rename; default is dry-run")
     args = parser.parse_args()
-    storage = Storage(DATA_ROOT / "logger.sqlite3", DATA_ROOT)
+    storage = Storage(DATA_ROOT / "log" / "logger.sqlite3", DATA_ROOT)
     storage.initialize()
     with storage.connect() as connection:
         rows = connection.execute(

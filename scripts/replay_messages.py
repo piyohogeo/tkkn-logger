@@ -18,14 +18,14 @@ from tokkun99_logger.state_detector import DebouncedStateDetector, GameState, St
 from tokkun99_logger.storage import Storage  # noqa: E402
 
 
-DEFAULT_STATE_PROFILE = PROJECT_ROOT / "data" / "templates" / "states" / "v1" / "profile.json"
+DEFAULT_STATE_PROFILE = PROJECT_ROOT / "data" / "template" / "states" / "v1" / "profile.json"
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("session", type=Path)
     parser.add_argument("--state-profile", type=Path, default=DEFAULT_STATE_PROFILE)
-    parser.add_argument("--database", type=Path, default=PROJECT_ROOT / "data" / "logger.sqlite3")
+    parser.add_argument("--database", type=Path, default=PROJECT_ROOT / "data" / "log" / "logger.sqlite3")
     args = parser.parse_args()
     session = args.session.resolve()
     storage = Storage(args.database, PROJECT_ROOT / "data")

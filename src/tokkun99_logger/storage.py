@@ -9,7 +9,7 @@ import sqlite3
 from typing import Literal
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 Metric = Literal["survival_ms", "bullet_count"]
 
 
@@ -81,6 +81,7 @@ class Storage:
                     message_cluster_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     perceptual_hash TEXT,
                     representative_path TEXT NOT NULL,
+                    screen_path TEXT,
                     label_text TEXT,
                     notes TEXT,
                     is_verified INTEGER NOT NULL DEFAULT 0 CHECK (is_verified IN (0, 1)),
@@ -143,17 +144,24 @@ class Storage:
             row = connection.execute("SELECT schema_version FROM schema_info LIMIT 1").fetchone()
             if row is None:
                 connection.execute("INSERT INTO schema_info(schema_version) VALUES (?)", (SCHEMA_VERSION,))
-            elif row["schema_version"] == 1:
-                columns = {
+            elif row["schema_version"] in (1, 2):
+                if row["schema_version"] == 1:
+                    columns = {
+                        column["name"]
+                        for column in connection.execute("PRAGMA table_info(records_history)").fetchall()
+                    }
+                    if "is_valid" not in columns:
+                        connection.execute(
+                            "ALTER TABLE records_history ADD COLUMN is_valid INTEGER NOT NULL DEFAULT 1"
+                        )
+                        connection.execute("ALTER TABLE records_history ADD COLUMN invalidated_at TEXT")
+                        connection.execute("ALTER TABLE records_history ADD COLUMN invalidation_reason TEXT")
+                message_columns = {
                     column["name"]
-                    for column in connection.execute("PRAGMA table_info(records_history)").fetchall()
+                    for column in connection.execute("PRAGMA table_info(message_clusters)").fetchall()
                 }
-                if "is_valid" not in columns:
-                    connection.execute(
-                        "ALTER TABLE records_history ADD COLUMN is_valid INTEGER NOT NULL DEFAULT 1"
-                    )
-                    connection.execute("ALTER TABLE records_history ADD COLUMN invalidated_at TEXT")
-                    connection.execute("ALTER TABLE records_history ADD COLUMN invalidation_reason TEXT")
+                if "screen_path" not in message_columns:
+                    connection.execute("ALTER TABLE message_clusters ADD COLUMN screen_path TEXT")
                 connection.execute("UPDATE schema_info SET schema_version = ?", (SCHEMA_VERSION,))
             elif row["schema_version"] != SCHEMA_VERSION:
                 raise RuntimeError(

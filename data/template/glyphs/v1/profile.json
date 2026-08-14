@@ -1,0 +1,111 @@
+{
+  "profile_version": 1,
+  "reference_size": [
+    320,
+    240
+  ],
+  "minimum_confidence": 0.95,
+  "minimum_margin": 0.05,
+  "rois": {
+    "survival": [
+      120,
+      118,
+      230,
+      138
+    ],
+    "bullets": [
+      [
+        120,
+        143,
+        220,
+        162
+      ],
+      [
+        120,
+        169,
+        220,
+        188
+      ]
+    ]
+  },
+  "templates": {
+    ".": [
+      "dot/c54abe011f9c.png"
+    ],
+    "0": [
+      "0/d6ac88e2a744.png"
+    ],
+    "1": [
+      "1/174b8c9f5c95.png"
+    ],
+    "2": [
+      "2/7620c24d750e.png"
+    ],
+    "3": [
+      "3/e3f5454f8fdf.png"
+    ],
+    "4": [
+      "4/c0ad7992a3c7.png"
+    ],
+    "5": [
+      "5/58b6f3628a1c.png"
+    ],
+    "6": [
+      "6/2b5e93c51827.png",
+      "6/b92a008e3948.png",
+      "6/bdf2a22ea314.png"
+    ],
+    "7": [
+      "7/f2ce3b6bc1ad.png"
+    ],
+    "8": [
+      "8/b0022d4614cb.png"
+    ],
+    "9": [
+      "9/64650b863442.png"
+    ]
+  },
+  "source": {
+    "session_ids": [
+      "20260813T150904+0900",
+      "20260813T151810+0900"
+    ],
+    "reviewed_samples": [
+      {
+        "index": 233,
+        "survival_text": "9.408",
+        "bullet_text": "51"
+      },
+      {
+        "index": 842,
+        "survival_text": "1.024",
+        "bullet_text": "50"
+      },
+      {
+        "session_id": "20260813T151810+0900",
+        "index": 210,
+        "survival_text": "6.448",
+        "bullet_text": "51"
+      },
+      {
+        "session_id": "20260813T151810+0900",
+        "index": 439,
+        "survival_text": "7.760",
+        "bullet_text": "52"
+      },
+      {
+        "session_id": "20260813T151810+0900",
+        "index": 675,
+        "survival_text": "8.064",
+        "bullet_text": "51"
+      },
+      {
+        "session_id": "20260813T151810+0900",
+        "index": 1008,
+        "survival_text": "11.792",
+        "bullet_text": "53"
+      }
+    ]
+  },
+  "missing_digits": []
+}

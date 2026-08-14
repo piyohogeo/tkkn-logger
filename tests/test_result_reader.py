@@ -109,7 +109,7 @@ def test_centered_digit_run_rejects_five_digits_and_wrong_anchor() -> None:
 
 def test_local_golden_result_samples() -> None:
     project = Path(__file__).resolve().parents[1]
-    profile = project / "data" / "templates" / "glyphs" / "v1" / "profile.json"
+    profile = project / "data" / "template" / "glyphs" / "v1" / "profile.json"
     frames = project / "artifacts" / "calibration" / "sessions" / "20260813T150904+0900" / "frames"
     if not profile.exists() or not frames.exists():
         pytest.skip("Local game calibration fixtures are intentionally not versioned")
@@ -137,8 +137,8 @@ def test_local_golden_result_samples() -> None:
 
 def test_local_live_smoke_result_samples() -> None:
     project = Path(__file__).resolve().parents[1]
-    profile = project / "data" / "templates" / "glyphs" / "v1" / "profile.json"
-    database = project / "data" / "logger.sqlite3"
+    profile = project / "data" / "template" / "glyphs" / "v1" / "profile.json"
+    database = project / "data" / "log" / "logger.sqlite3"
     if not profile.exists() or not database.exists():
         pytest.skip("Local live-smoke fixtures are intentionally not versioned")
     reader = ResultReader(profile)

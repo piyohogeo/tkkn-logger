@@ -85,7 +85,7 @@ class InstanceLock:
 def recover_partial_videos(data_root: Path) -> RecoveryResult:
     """Move abandoned FFmpeg partials to quarantine without deleting evidence."""
     root = data_root.resolve()
-    videos = (root / "videos").resolve()
+    videos = (root / "collection" / "videos").resolve()
     quarantine = (videos / "incomplete" / "recovered").resolve()
     recovered: list[Path] = []
     if not videos.exists():
@@ -125,7 +125,7 @@ def discard_detached_video(storage: Storage, run_id: str, occurred_at: str) -> b
     if relative is None:
         return False
     path = (storage.data_root / relative).resolve()
-    videos = (storage.data_root / "videos").resolve()
+    videos = (storage.data_root / "collection" / "videos").resolve()
     if videos not in path.parents:
         raise ValueError(f"Refusing to delete outside video root: {path}")
     try:

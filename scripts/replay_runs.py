@@ -17,8 +17,8 @@ from tokkun99_logger.result_reader import ResultConsensus, ResultReader  # noqa:
 from tokkun99_logger.state_detector import DebouncedStateDetector, GameState, StateClassifier  # noqa: E402
 
 
-DEFAULT_STATE_PROFILE = PROJECT_ROOT / "data" / "templates" / "states" / "v1" / "profile.json"
-DEFAULT_GLYPH_PROFILE = PROJECT_ROOT / "data" / "templates" / "glyphs" / "v1" / "profile.json"
+DEFAULT_STATE_PROFILE = PROJECT_ROOT / "data" / "template" / "states" / "v1" / "profile.json"
+DEFAULT_GLYPH_PROFILE = PROJECT_ROOT / "data" / "template" / "glyphs" / "v1" / "profile.json"
 
 
 def parse_args() -> argparse.Namespace:

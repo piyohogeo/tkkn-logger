@@ -16,12 +16,16 @@ DATA_ROOT = PROJECT_ROOT / "data"
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from tokkun99_logger.message_collector import MessageCollector  # noqa: E402
+from tokkun99_logger.data_layout import DataLayout  # noqa: E402
 from tokkun99_logger.result_reader import ResultReader  # noqa: E402
 from tokkun99_logger.storage import ScoreCorrection, Storage  # noqa: E402
 
 
+DATA_LAYOUT = DataLayout(DATA_ROOT)
+
+
 def storage() -> Storage:
-    value = Storage(DATA_ROOT / "logger.sqlite3", DATA_ROOT)
+    value = Storage(DATA_LAYOUT.database, DATA_ROOT)
     value.initialize()
     return value
 
@@ -74,7 +78,7 @@ def command_stats(_: argparse.Namespace) -> int:
 
 
 def command_review_scores(_: argparse.Namespace) -> int:
-    reader = ResultReader(DATA_ROOT / "templates" / "glyphs" / "v1" / "profile.json")
+    reader = ResultReader(DATA_LAYOUT.glyph_profile)
     with storage().connect() as connection:
         rows = connection.execute(
             """
@@ -116,7 +120,8 @@ def command_review_messages(_: argparse.Namespace) -> int:
     with storage().connect() as connection:
         rows = connection.execute(
             """
-            SELECT c.message_cluster_id, c.observation_count, c.representative_path, c.notes,
+            SELECT c.message_cluster_id, c.observation_count, c.representative_path,
+                   c.screen_path, c.notes,
                    MIN(r.survival_ms) AS min_survival_ms,
                    MAX(r.survival_ms) AS max_survival_ms
             FROM message_clusters AS c
@@ -138,6 +143,7 @@ def command_review_messages(_: argparse.Namespace) -> int:
         print(
             f"cluster={row['message_cluster_id']} observations={row['observation_count']} "
             f"survival_range={survival_range} image={row['representative_path']} "
+            f"screen={row['screen_path'] or '-'} "
             f"candidate={row['notes'] or '-'}"
         )
     return 0

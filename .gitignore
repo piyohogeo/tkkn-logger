@@ -3,7 +3,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
-# Local runtime, game-derived calibration data, videos, databases, and audits
-data/
+# Local runtime collections, logs, game-derived captures, and audits
+data/*
+!data/template/
+!data/template/**
 logs/
 artifacts/

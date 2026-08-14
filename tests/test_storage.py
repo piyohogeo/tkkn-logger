@@ -8,7 +8,12 @@ import pytest
 from tokkun99_logger.storage import RunFinalization, ScoreCorrection, Storage
 
 
-def make_run(run_id: str, survival: int, bullets: int, video: str | None = "videos/run.mp4") -> RunFinalization:
+def make_run(
+    run_id: str,
+    survival: int,
+    bullets: int,
+    video: str | None = "collection/videos/run.mp4",
+) -> RunFinalization:
     return RunFinalization(
         run_id=run_id,
         started_at="2026-08-13T15:00:00+09:00",
@@ -25,9 +30,45 @@ def initialized_storage(tmp_path: Path) -> Storage:
     data = tmp_path / "data"
     storage = Storage(data / "logger.sqlite3", data)
     storage.initialize()
-    (data / "videos").mkdir()
-    (data / "videos" / "run.mp4").write_bytes(b"video")
+    (data / "collection" / "videos").mkdir(parents=True)
+    (data / "collection" / "videos" / "run.mp4").write_bytes(b"video")
     return storage
+
+
+def test_schema_v2_adds_message_screen_path(tmp_path: Path) -> None:
+    data = tmp_path / "data"
+    data.mkdir()
+    database = data / "logger.sqlite3"
+    with sqlite3.connect(database) as connection:
+        connection.executescript(
+            """
+            CREATE TABLE schema_info (schema_version INTEGER NOT NULL);
+            INSERT INTO schema_info(schema_version) VALUES (2);
+            CREATE TABLE message_clusters (
+                message_cluster_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                perceptual_hash TEXT,
+                representative_path TEXT NOT NULL,
+                label_text TEXT,
+                notes TEXT,
+                is_verified INTEGER NOT NULL DEFAULT 0,
+                merged_into INTEGER,
+                first_seen_at TEXT NOT NULL,
+                last_seen_at TEXT NOT NULL,
+                observation_count INTEGER NOT NULL DEFAULT 1
+            );
+            """
+        )
+
+    storage = Storage(database, data)
+    storage.initialize()
+
+    with storage.connect() as connection:
+        version = connection.execute("SELECT schema_version FROM schema_info").fetchone()[0]
+        columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(message_clusters)")
+        }
+    assert version == 3
+    assert "screen_path" in columns
 
 
 def test_two_metrics_update_independently_and_share_video(tmp_path) -> None:
@@ -49,7 +90,7 @@ def test_two_metrics_update_independently_and_share_video(tmp_path) -> None:
         history = connection.execute(
             "SELECT metric, value FROM records_history ORDER BY record_id"
         ).fetchall()
-    assert [row["video_path"] for row in paths] == ["videos/run.mp4"]
+    assert [row["video_path"] for row in paths] == ["collection/videos/run.mp4"]
     assert [(row["metric"], row["value"]) for row in history] == [
         ("survival_ms", 1000),
         ("bullet_count", 50),
@@ -62,7 +103,7 @@ def test_record_without_finalized_video_rolls_back(tmp_path) -> None:
     storage = initialized_storage(tmp_path)
 
     with pytest.raises(ValueError, match="finalized video"):
-        storage.finalize_run(make_run("missing", 1000, 50, "videos/missing.mp4"))
+        storage.finalize_run(make_run("missing", 1000, 50, "collection/videos/missing.mp4"))
 
     with storage.connect() as connection:
         assert connection.execute("SELECT COUNT(*) FROM runs").fetchone()[0] == 0
@@ -120,13 +161,13 @@ def test_reviewed_correction_rebuilds_record_history(tmp_path) -> None:
 def test_detach_nonrecord_video_but_protect_record_video(tmp_path) -> None:
     storage = initialized_storage(tmp_path)
     storage.finalize_run(make_run("record", 1000, 50))
-    ordinary_video = storage.data_root / "videos" / "ordinary.mp4"
+    ordinary_video = storage.data_root / "collection" / "videos" / "ordinary.mp4"
     ordinary_video.write_bytes(b"video")
-    storage.finalize_run(make_run("ordinary", 900, 49, "videos/ordinary.mp4"))
+    storage.finalize_run(make_run("ordinary", 900, 49, "collection/videos/ordinary.mp4"))
 
     detached = storage.detach_nonrecord_video("ordinary", "2026-08-13T16:00:00+09:00")
 
-    assert detached == "videos/ordinary.mp4"
+    assert detached == "collection/videos/ordinary.mp4"
     with storage.connect() as connection:
         row = connection.execute(
             "SELECT video_path FROM runs WHERE run_id = 'ordinary'"

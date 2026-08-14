@@ -22,7 +22,7 @@ LABELS = {
 
 
 def main() -> int:
-    storage = Storage(PROJECT_ROOT / "data" / "logger.sqlite3", PROJECT_ROOT / "data")
+    storage = Storage(PROJECT_ROOT / "data" / "log" / "logger.sqlite3", PROJECT_ROOT / "data")
     storage.initialize()
     collector = MessageCollector(storage)
     for cluster_id, label in LABELS.items():

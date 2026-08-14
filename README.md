@@ -13,7 +13,7 @@
 .\run_logger.cmd
 ```
 
-停止は `Ctrl+C`。通常の `records_only` モードでは、生存時間または弾数の新記録動画だけを保持します。非記録runもRESULT画像、スコア、メッセージ、DB行は保持します。認識に失敗したrunと途中終了runの動画は、再確認できるよう隔離保存します。
+停止は `Ctrl+C`。通常の `records_only` モードでは、生存時間または弾数の新記録動画だけを保持します。非記録runもスコア、メッセージ、DB行は保持しますが、RESULT画像は既定では保存しません。認識に失敗したrunと途中終了runの動画は、再確認できるよう隔離保存します。
 
 動作確認用の120秒収集は次のコマンドです。このモードは全動画を保持します。
 
@@ -81,24 +81,37 @@ cd "$env:USERPROFILE\src\tkkn-logger"
 
 ## データ保存先
 
-- `data/logger.sqlite3`: run、スコア、記録履歴、メッセージ、訂正イベント
-- `data/videos/collection`: 保持対象の完走動画。ファイル名は生存時間・日付・時刻順
-- `data/videos/incomplete`: 途中終了・異常終了動画
-- `data/videos/incomplete/recovered`: 起動時に発見した放棄partial
-- `data/runs/YYYY/MM/DD`: RESULT確認画像。ファイル名は生存時間・日付・時刻順
-- `data/messages/clusters`: メッセージ代表画像
-- `data/templates`: 状態・数字テンプレート
+人間が閲覧する収集データ:
+
+- `data/collection/messages`: 新規MESSAGEのフル画面PNG。ファイル名は生存時間・日付・時刻順
+- `data/collection/videos`: 保持対象の完走動画。ファイル名は生存時間・日付・時刻順
+- `data/collection/videos/incomplete`: 途中終了・異常終了動画
+- `data/collection/videos/incomplete/recovered`: 起動時に発見した放棄partial
+- `data/collection/runs`: デバッグ用RESULT画像。`--save-run-images` 指定時のみ保存
+
+プログラムが使用するログ:
+
+- `data/log/logger.sqlite3`: run、スコア、記録履歴、メッセージ、訂正イベント
+- `data/log/messages`: MESSAGE照合用の正規化画像
+- `data/log/regression`: 数字認識の回帰評価ログ
+- `data/log/logger.lock`: 二重起動防止ロック
+
+配布固定データ:
+
+- `data/template`: 状態・数字テンプレート
 - `artifacts/calibration`: キャリブレーション結果
 
 ロガーは二重起動を拒否します。突然終了後に残った `.partial.mp4` は、次回起動時に削除せず `recovered` へ移動します。
 
-完走ファイル名の例は `000000040624ms_2026-08-13_15-40-35+0900_<run-id>.mp4`。先頭12桁は生存ミリ秒なので、エクスプローラーの名前順で生存時間順に並びます。日時はプレイ開始時刻とUTCオフセットです。RESULT画像は同じ名前の末尾に `_result.png` が付きます。生存時間未確定の途中終了動画は `unknown_日時_<run-id>.mp4` になります。
+完走ファイル名の例は `000000040624ms_2026-08-13_15-40-35+0900_<run-id>.mp4`。先頭12桁は生存ミリ秒なので、エクスプローラーの名前順で生存時間順に並びます。日時はプレイ開始時刻とUTCオフセットです。デバッグ保存するRESULT画像は同じ名前の末尾に `_result.png` が付きます。生存時間未確定の途中終了動画は `unknown_日時_<run-id>.mp4` になります。
+
+通常起動ではRESULT画像を保存しません。デバッグ用に1runにつき1枚保存する場合は `--save-run-images` を付けます。
 
 RESULTを表示したままにすると、既定では10秒後に録画だけを一時停止します。状態検出とスコア認識は継続し、MESSAGEへ進むと録画を再開してMESSAGE画面を含めた後に確定終了します。時間は `--result-record-seconds 15` のように変更できます。
 
 録画末尾のMESSAGEは、確定したフレームを複製して既定で約2秒間表示します。実時間の待機は行いません。長さは `--message-hold-seconds 3` のように変更できます。
 
-数字認識の回帰評価用にRESULTフレームを収集する実験オプションがあります。`--log-result-frames` を付けると、RESULT状態アンカーと一致し、かつ画素が異なるフレームだけを可逆圧縮PNGとして `data/regression/results/YYYY/MM/DD/<run-id>` に保存します。静止画は重複保存しないため通常は1枚です。容量を制限するため1runあたり既定で最大300枚とし、上限は `--result-frame-log-limit 100` のように変更できます。通常起動では無効です。
+数字認識の回帰評価用にRESULTフレームを収集する実験オプションがあります。`--log-result-frames` を付けると、RESULT状態アンカーと一致し、かつ画素が異なるフレームだけを可逆圧縮PNGとして `data/log/regression/results/YYYY/MM/DD/<run-id>` に保存します。静止画は重複保存しないため通常は1枚です。容量を制限するため1runあたり既定で最大300枚とし、上限は `--result-frame-log-limit 100` のように変更できます。通常起動では無効です。
 
 ```powershell
 cd scripts

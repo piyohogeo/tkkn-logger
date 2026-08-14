@@ -15,7 +15,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 from tokkun99_logger.state_detector import DebouncedStateDetector, StateClassifier  # noqa: E402
 
 
-DEFAULT_PROFILE = PROJECT_ROOT / "data" / "templates" / "states" / "v1" / "profile.json"
+DEFAULT_PROFILE = PROJECT_ROOT / "data" / "template" / "states" / "v1" / "profile.json"
 
 
 def parse_args() -> argparse.Namespace:

@@ -10,7 +10,7 @@ import cv2
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = PROJECT_ROOT / "data" / "templates" / "states" / "v1"
+DEFAULT_OUTPUT = PROJECT_ROOT / "data" / "template" / "states" / "v1"
 ROIS = {
     "title": [(60, 20, 260, 125), (60, 185, 260, 235)],
     "result": [(55, 20, 270, 120)],

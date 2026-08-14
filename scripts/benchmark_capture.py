@@ -173,7 +173,7 @@ def main() -> int:
     window = windows[0]
     if window.client_size != (320, 240):
         raise SystemExit(f"Expected 320x240 client, got {window.client_size}")
-    lock = InstanceLock(PROJECT_ROOT / "data" / "logger.lock")
+    lock = InstanceLock(PROJECT_ROOT / "data" / "log" / "logger.lock")
     lock.acquire()
     phases: list[dict[str, object]] = []
     sequence = ("baseline", "mss", "wgc", "wgc", "mss", "baseline")

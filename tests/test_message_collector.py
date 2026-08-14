@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import cv2
 import numpy as np
 
 from tokkun99_logger.message_collector import MessageCollector, hamming_distance, normalize_message
@@ -30,16 +31,34 @@ def test_exact_message_reuses_cluster(tmp_path) -> None:
     storage.initialize()
     collector = MessageCollector(storage)
 
-    first = collector.collect(message_frame(), "2026-08-13T10:00:00+09:00")
-    second = collector.collect(message_frame(), "2026-08-13T10:01:00+09:00")
+    screen_relative = (
+        "collection/messages/000000012345ms_2026-08-13_10-00-00+0900_run-1_message.png"
+    )
+    first = collector.collect(
+        message_frame(),
+        "2026-08-13T10:00:00+09:00",
+        screen_relative_path=screen_relative,
+    )
+    second = collector.collect(
+        message_frame(),
+        "2026-08-13T10:01:00+09:00",
+        screen_relative_path="collection/messages/should-not-be-created.png",
+    )
 
     assert first.is_new_cluster is True
     assert second.is_new_cluster is False
     assert first.cluster_id == second.cluster_id
+    assert first.screen_path == screen_relative
+    assert second.screen_path is None
+    saved_screen = storage.data_root / screen_relative
+    assert saved_screen.is_file()
+    assert cv2.imread(str(saved_screen), cv2.IMREAD_COLOR).shape == (240, 320, 3)
+    assert not (storage.data_root / "collection/messages/should-not-be-created.png").exists()
     with storage.connect() as connection:
         cluster = connection.execute("SELECT * FROM message_clusters").fetchone()
         variant = connection.execute("SELECT * FROM message_variants").fetchone()
     assert cluster["observation_count"] == 2
+    assert cluster["screen_path"] == screen_relative
     assert variant["observation_count"] == 2
 
 

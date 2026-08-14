@@ -4,11 +4,12 @@ cd /d "%~dp0.."
 
 echo Tokkun '99 automatic logger - regression frame experiment
 echo Observation only. No game input is ever sent.
+echo One canonical RESULT image is saved per run.
 echo Distinct RESULT frames are saved as lossless PNGs, up to 300 per run.
 echo Press Ctrl+C to stop safely.
 echo.
 
-".venv\Scripts\python.exe" "scripts\run_live_logger.py" --duration 0 --fps 30 --mode records_only --log-result-frames
+".venv\Scripts\python.exe" "scripts\run_live_logger.py" --duration 0 --fps 30 --mode records_only --save-run-images --log-result-frames
 set "LOGGER_EXIT=%ERRORLEVEL%"
 
 echo.

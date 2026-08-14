@@ -1,0 +1,49 @@
+{
+  "profile_version": 1,
+  "reference_size": [
+    320,
+    240
+  ],
+  "text_threshold": 180,
+  "title_threshold": 0.9,
+  "result_threshold": 0.9,
+  "stable_frames": 3,
+  "templates": {
+    "title": [
+      {
+        "roi": [
+          60,
+          20,
+          260,
+          125
+        ],
+        "path": "title_0.png"
+      },
+      {
+        "roi": [
+          60,
+          185,
+          260,
+          235
+        ],
+        "path": "title_1.png"
+      }
+    ],
+    "result": [
+      {
+        "roi": [
+          55,
+          20,
+          270,
+          120
+        ],
+        "path": "result_0.png"
+      }
+    ]
+  },
+  "source": {
+    "session_id": "20260813T150904+0900",
+    "title_index": 0,
+    "result_index": 233
+  }
+}

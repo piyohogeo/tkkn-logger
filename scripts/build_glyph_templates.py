@@ -20,7 +20,7 @@ from tokkun99_logger.result_reader import (  # noqa: E402
 )
 
 
-DEFAULT_OUTPUT = PROJECT_ROOT / "data" / "templates" / "glyphs" / "v1"
+DEFAULT_OUTPUT = PROJECT_ROOT / "data" / "template" / "glyphs" / "v1"
 BUILD_ROIS = {"survival": (120, 118, 230, 138), "bullets": (120, 143, 220, 162)}
 PROFILE_ROIS = {
     "survival": [120, 118, 230, 138],

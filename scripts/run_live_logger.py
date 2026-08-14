@@ -18,6 +18,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from tokkun99_logger.message_collector import MessageCollector  # noqa: E402
+from tokkun99_logger.data_layout import DataLayout  # noqa: E402
 from tokkun99_logger.maintenance import (  # noqa: E402
     InstanceLock,
     artifact_stem,
@@ -40,8 +41,9 @@ from probe_capture import (  # noqa: E402
 
 
 DATA_ROOT = PROJECT_ROOT / "data"
-STATE_PROFILE = DATA_ROOT / "templates" / "states" / "v1" / "profile.json"
-GLYPH_PROFILE = DATA_ROOT / "templates" / "glyphs" / "v1" / "profile.json"
+DATA_LAYOUT = DataLayout(DATA_ROOT)
+STATE_PROFILE = DATA_LAYOUT.state_profile
+GLYPH_PROFILE = DATA_LAYOUT.glyph_profile
 
 
 @dataclass
@@ -87,7 +89,7 @@ def parse_args() -> argparse.Namespace:
         "--mode",
         choices=("records_only", "collect_samples", "collect_all"),
         default="records_only",
-        help="Video retention policy (RESULT images are always retained)",
+        help="Video retention policy",
     )
     parser.add_argument(
         "--sample-every",
@@ -107,6 +109,11 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=2.0,
         help="Extend the final MESSAGE frame by this many seconds",
+    )
+    parser.add_argument(
+        "--save-run-images",
+        action="store_true",
+        help="Debug option: save one lossless RESULT image per run",
     )
     parser.add_argument(
         "--log-result-frames",
@@ -138,9 +145,9 @@ def main() -> int:
             "fps/sample-every/result-frame-log-limit must be positive"
         )
     enable_per_monitor_dpi_awareness()
-    instance_lock = InstanceLock(DATA_ROOT / "logger.lock")
+    instance_lock = InstanceLock(DATA_LAYOUT.lock)
     instance_lock.acquire()
-    storage = Storage(DATA_ROOT / "logger.sqlite3", DATA_ROOT)
+    storage = Storage(DATA_LAYOUT.database, DATA_ROOT)
     storage.initialize()
     recovery = recover_partial_videos(DATA_ROOT)
     if recovery.recovered:
@@ -150,7 +157,7 @@ def main() -> int:
     message_collector = MessageCollector(storage)
     result_reader = ResultReader(GLYPH_PROFILE)
     regression_logger = (
-        RegressionFrameLogger(DATA_ROOT / "regression" / "results", args.result_frame_log_limit)
+        RegressionFrameLogger(DATA_LAYOUT.regression / "results", args.result_frame_log_limit)
         if args.log_result_frames
         else None
     )
@@ -188,16 +195,15 @@ def main() -> int:
         ended_at = now_iso()
         stem = artifact_stem(current.survival_ms, current.started_at, current.run_id)
         result_relative = None
-        if current.result_image is not None:
-            date_path = datetime.fromisoformat(current.started_at).strftime("%Y/%m/%d")
-            result_relative = f"runs/{date_path}/{stem}_result.png"
+        if args.save_run_images and current.result_image is not None:
+            result_relative = f"collection/runs/{stem}_result.png"
             result_path = DATA_ROOT / result_relative
             result_path.parent.mkdir(parents=True, exist_ok=True)
             if not cv2.imwrite(str(result_path), current.result_image):
                 raise OSError(f"Could not write {result_path}")
         if current.video_finalized and current.survival_ms is not None:
             old_video = (DATA_ROOT / current.video_relative).resolve()
-            new_relative = f"videos/collection/{stem}.mp4"
+            new_relative = f"collection/videos/{stem}.mp4"
             new_video = (DATA_ROOT / new_relative).resolve()
             if old_video != new_video:
                 new_video.parent.mkdir(parents=True, exist_ok=True)
@@ -311,7 +317,7 @@ def main() -> int:
                     if current is not None:
                         if recorder.active:
                             incomplete_stem = artifact_stem(None, current.started_at, current.run_id)
-                            incomplete = DATA_ROOT / "videos" / "incomplete" / f"{incomplete_stem}.mp4"
+                            incomplete = DATA_LAYOUT.videos / "incomplete" / f"{incomplete_stem}.mp4"
                             recorder.finalize_incomplete(incomplete)
                             current.video_relative = incomplete.relative_to(DATA_ROOT).as_posix()
                             current.video_finalized = True
@@ -319,7 +325,7 @@ def main() -> int:
                     run_id = str(uuid.uuid4())
                     started_at = now_iso()
                     pending_stem = artifact_stem(None, started_at, run_id)
-                    video_relative = f"videos/collection/{pending_stem}.mp4"
+                    video_relative = f"collection/videos/{pending_stem}.mp4"
                     current = LiveRun(run_id, started_at, video_relative)
                     if regression_logger is not None:
                         regression_logger.start(run_id, started_at)
@@ -339,7 +345,15 @@ def main() -> int:
                         current.survival_ms = resolved.reading.survival_ms
                         current.bullet_count = resolved.reading.bullet_count
                         current.score_confidence = resolved.reading.confidence
-                    assignment = message_collector.collect(image, now_iso())
+                    message_stem = artifact_stem(
+                        current.survival_ms, current.started_at, current.run_id
+                    )
+                    message_relative = f"collection/messages/{message_stem}_message.png"
+                    assignment = message_collector.collect(
+                        image,
+                        now_iso(),
+                        screen_relative_path=message_relative,
+                    )
                     current.message_cluster_id = assignment.cluster_id
                     if recorder.active:
                         recorder.append_hold(image.tobytes(), args.message_hold_seconds)
@@ -370,7 +384,7 @@ def main() -> int:
         if current is not None:
             if recorder.active:
                 incomplete_stem = artifact_stem(None, current.started_at, current.run_id)
-                incomplete = DATA_ROOT / "videos" / "incomplete" / f"{incomplete_stem}.mp4"
+                incomplete = DATA_LAYOUT.videos / "incomplete" / f"{incomplete_stem}.mp4"
                 recorder.finalize_incomplete(incomplete)
                 current.video_relative = incomplete.relative_to(DATA_ROOT).as_posix()
                 current.video_finalized = True
@@ -383,7 +397,7 @@ def main() -> int:
     if current is not None:
         if recorder.active:
             incomplete_stem = artifact_stem(None, current.started_at, current.run_id)
-            incomplete = DATA_ROOT / "videos" / "incomplete" / f"{incomplete_stem}.mp4"
+            incomplete = DATA_LAYOUT.videos / "incomplete" / f"{incomplete_stem}.mp4"
             recorder.finalize_incomplete(incomplete)
             current.video_relative = incomplete.relative_to(DATA_ROOT).as_posix()
             current.video_finalized = True

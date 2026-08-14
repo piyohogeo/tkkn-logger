@@ -7,7 +7,7 @@ from datetime import datetime
 import hashlib
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import cv2
 import numpy as np
@@ -32,6 +32,7 @@ class MessageAssignment:
     is_new_cluster: bool
     nearest_cluster_id: int | None
     nearest_hamming_distance: int | None
+    screen_path: str | None
 
 
 def normalize_message(frame: np.ndarray) -> NormalizedMessage:
@@ -63,9 +64,20 @@ class MessageCollector:
     def __init__(self, storage: Storage) -> None:
         self.storage = storage
 
-    def collect(self, frame: np.ndarray, seen_at: str | None = None) -> MessageAssignment:
+    def collect(
+        self,
+        frame: np.ndarray,
+        seen_at: str | None = None,
+        *,
+        screen_relative_path: str | None = None,
+    ) -> MessageAssignment:
         normalized = normalize_message(frame)
         seen_at = seen_at or datetime.now().astimezone().isoformat()
+        if screen_relative_path is not None:
+            relative = PurePosixPath(screen_relative_path.replace("\\", "/"))
+            if relative.is_absolute() or ".." in relative.parts:
+                raise ValueError("Message screen path must be relative to data root")
+            screen_relative_path = relative.as_posix()
         connection = self.storage.connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
@@ -95,6 +107,7 @@ class MessageCollector:
                     False,
                     None,
                     None,
+                    None,
                 )
 
             cluster_rows = connection.execute(
@@ -110,13 +123,25 @@ class MessageCollector:
                     nearest_id = int(row["message_cluster_id"])
                     nearest_distance = distance
 
-            relative_path = f"messages/clusters/{normalized.exact_hash}.png"
+            relative_path = f"log/messages/{normalized.exact_hash}.png"
             final_path = self.storage.data_root / relative_path
             final_path.parent.mkdir(parents=True, exist_ok=True)
             temporary_path = final_path.with_suffix(".partial.png")
             if final_path.exists() or temporary_path.exists():
                 raise FileExistsError(final_path if final_path.exists() else temporary_path)
             temporary_path.write_bytes(normalized.png)
+            screen_path: Path | None = None
+            screen_temporary_path: Path | None = None
+            if screen_relative_path is not None:
+                screen_path = self.storage.data_root / screen_relative_path
+                screen_path.parent.mkdir(parents=True, exist_ok=True)
+                screen_temporary_path = screen_path.with_suffix(".partial.png")
+                if screen_path.exists() or screen_temporary_path.exists():
+                    raise FileExistsError(screen_path if screen_path.exists() else screen_temporary_path)
+                ok, encoded_screen = cv2.imencode(".png", frame)
+                if not ok:
+                    raise OSError("Could not encode full MESSAGE screen PNG")
+                screen_temporary_path.write_bytes(encoded_screen.tobytes())
             candidate_note = None
             if nearest_id is not None:
                 candidate_note = json.dumps(
@@ -125,11 +150,18 @@ class MessageCollector:
             cursor = connection.execute(
                 """
                 INSERT INTO message_clusters (
-                    perceptual_hash, representative_path, notes,
+                    perceptual_hash, representative_path, screen_path, notes,
                     first_seen_at, last_seen_at, observation_count
-                ) VALUES (?, ?, ?, ?, ?, 1)
+                ) VALUES (?, ?, ?, ?, ?, ?, 1)
                 """,
-                (normalized.perceptual_hash, relative_path, candidate_note, seen_at, seen_at),
+                (
+                    normalized.perceptual_hash,
+                    relative_path,
+                    screen_relative_path,
+                    candidate_note,
+                    seen_at,
+                    seen_at,
+                ),
             )
             cluster_id = int(cursor.lastrowid)
             connection.execute(
@@ -141,6 +173,8 @@ class MessageCollector:
                 (normalized.exact_hash, cluster_id, relative_path),
             )
             os.replace(temporary_path, final_path)
+            if screen_path is not None and screen_temporary_path is not None:
+                os.replace(screen_temporary_path, screen_path)
             connection.commit()
             return MessageAssignment(
                 cluster_id,
@@ -149,6 +183,7 @@ class MessageCollector:
                 True,
                 nearest_id,
                 nearest_distance,
+                screen_relative_path,
             )
         except Exception:
             connection.rollback()
