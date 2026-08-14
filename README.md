@@ -96,6 +96,8 @@ cd "$env:USERPROFILE\src\tkkn-logger"
 
 RESULTを表示したままにすると、既定では10秒後に録画だけを一時停止します。状態検出とスコア認識は継続し、MESSAGEへ進むと録画を再開してMESSAGE画面を含めた後に確定終了します。時間は `--result-record-seconds 15` のように変更できます。
 
+録画末尾のMESSAGEは、確定したフレームを複製して既定で約2秒間表示します。実時間の待機は行いません。長さは `--message-hold-seconds 3` のように変更できます。
+
 数字認識の回帰評価用にRESULTフレームを収集する実験オプションがあります。`--log-result-frames` を付けると、RESULT状態アンカーと一致し、かつ画素が異なるフレームだけを可逆圧縮PNGとして `data/regression/results/YYYY/MM/DD/<run-id>` に保存します。静止画は重複保存しないため通常は1枚です。容量を制限するため1runあたり既定で最大300枚とし、上限は `--result-frame-log-limit 100` のように変更できます。通常起動では無効です。
 
 ```powershell
@@ -147,3 +149,23 @@ py -3.10 -m venv .venv
 - ゲーム側の未知のRESULT配置・未知数字字形はレビュー対象になる
 - MESSAGEの近似ハッシュは候補提示だけに使い、自動統合しない
 - ディスク枯渇試験は安全なしきい値模擬で行い、実際にディスクを満杯にはしない
+
+## 実験的Windows Graphics Capture
+
+通常の `run_logger.cmd` は実績のあるMSSバックエンドを使用します。録画を30 FPSに維持したままWindows Graphics Captureを試す場合は、ゲームを起動して次を実行します。
+
+```powershell
+cd scripts
+.\run_logger_wgc.cmd
+```
+
+WGCは対象ウィンドウの最新フレームをイベントで受け取り、ロガーの30 FPS出力時計に合わせて使用します。ウィンドウ内容が更新されない間は同じフレームを再利用するため、動画のフレームレートは30 FPSのままです。WGCが利用できない場合にMSSへ暗黙に切り替えることはありません。
+
+MSSとWGCの負荷を同条件で比較するには、ゲームを静止したタイトル画面にして次を実行します。約75秒かかり、ゲーム入力や動画保存は行いません。
+
+```powershell
+cd scripts
+.\run_capture_ab.cmd
+```
+
+結果は `artifacts/performance/capture_ab` にJSONで保存されます。DWM CPU、測定プロセスCPU、実効出力FPSを比較できます。

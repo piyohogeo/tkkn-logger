@@ -30,7 +30,13 @@ from tokkun99_logger.regression_frames import RegressionFrameLogger  # noqa: E40
 from tokkun99_logger.result_reader import ResultConsensus, ResultReader  # noqa: E402
 from tokkun99_logger.state_detector import DebouncedStateDetector, GameState, StateClassifier  # noqa: E402
 from tokkun99_logger.storage import RunFinalization, Storage  # noqa: E402
-from probe_capture import MssCapture, enable_per_monitor_dpi_awareness, enumerate_windows, select_capturable_windows  # noqa: E402
+from probe_capture import (  # noqa: E402
+    MssCapture,
+    WgcCapture,
+    enable_per_monitor_dpi_awareness,
+    enumerate_windows,
+    select_capturable_windows,
+)
 
 
 DATA_ROOT = PROJECT_ROOT / "data"
@@ -70,6 +76,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--duration", type=float, default=120.0, help="0 runs until Ctrl+C")
     parser.add_argument("--fps", type=int, default=30)
+    parser.add_argument(
+        "--capture-backend",
+        choices=("mss", "wgc"),
+        default="mss",
+        help="Screen capture backend; WGC is experimental",
+    )
     parser.add_argument("--ffmpeg", type=Path, default=Path(r"C:\tools\ffmpeg\bin\ffmpeg.exe"))
     parser.add_argument(
         "--mode",
@@ -89,6 +101,12 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=10.0,
         help="Pause video after this many seconds continuously on RESULT",
+    )
+    parser.add_argument(
+        "--message-hold-seconds",
+        type=float,
+        default=2.0,
+        help="Extend the final MESSAGE frame by this many seconds",
     )
     parser.add_argument(
         "--log-result-frames",
@@ -112,6 +130,7 @@ def main() -> int:
         or args.sample_every <= 0
         or args.min_free_gb < 0
         or args.result_record_seconds < 0
+        or args.message_hold_seconds < 0
         or args.result_frame_log_limit <= 0
     ):
         raise SystemExit(
@@ -144,7 +163,11 @@ def main() -> int:
         pre_roll_seconds=2.0,
     )
     window = locate_window()
-    capture = MssCapture(*window.client_origin, *window.client_size)
+    capture = (
+        WgcCapture(window, args.fps)
+        if args.capture_backend == "wgc"
+        else MssCapture(*window.client_origin, *window.client_size)
+    )
     current: LiveRun | None = None
     consensus: ResultConsensus | None = None
     started = time.perf_counter()
@@ -153,7 +176,10 @@ def main() -> int:
     completed_runs = 0
     result_started_elapsed: float | None = None
     interval = 1.0 / args.fps
-    print("Live logger started (observation only; no input injection).")
+    print(
+        f"Live logger started (observation only; no input injection; "
+        f"capture={args.capture_backend}; fps={args.fps})."
+    )
 
     def persist_current(status: str) -> None:
         nonlocal current, consensus, completed_runs, result_started_elapsed
@@ -190,7 +216,7 @@ def main() -> int:
             video_path=current.video_relative if current.video_finalized else None,
             result_frame_path=result_relative,
             message_cluster_id=current.message_cluster_id,
-            capture_profile_id="mss-320x240-30fps-v1",
+            capture_profile_id=f"{args.capture_backend}-320x240-{args.fps}fps-v1",
             recognizer_version="state-v1+glyph-v2",
         )
         result = storage.finalize_run(finalization)
@@ -233,9 +259,18 @@ def main() -> int:
             elapsed = time.perf_counter() - started
             if elapsed - last_window_refresh >= 1.0:
                 refreshed = locate_window()
-                if refreshed.client_origin != window.client_origin:
+                capture_target_changed = refreshed.hwnd != window.hwnd
+                mss_position_changed = (
+                    args.capture_backend == "mss"
+                    and refreshed.client_origin != window.client_origin
+                )
+                if capture_target_changed or mss_position_changed:
                     capture.__exit__()
-                    capture = MssCapture(*refreshed.client_origin, *refreshed.client_size)
+                    capture = (
+                        WgcCapture(refreshed, args.fps)
+                        if args.capture_backend == "wgc"
+                        else MssCapture(*refreshed.client_origin, *refreshed.client_size)
+                    )
                 window = refreshed
                 last_window_refresh = elapsed
 
@@ -265,6 +300,11 @@ def main() -> int:
                     f"{elapsed:8.2f}s state={observation.state.value} "
                     f"title={observation.scores.title:.3f} result={observation.scores.result:.3f}"
                 )
+
+                if observation.state == GameState.TITLE:
+                    # Frames buffered before TITLE can belong to the previous
+                    # run's MESSAGE and must not prefix the next recording.
+                    recorder.clear_pre_roll()
 
                 if observation.state == GameState.PLAYING:
                     ensure_disk_capacity(DATA_ROOT, minimum_free_bytes=minimum_free_bytes)
@@ -302,6 +342,7 @@ def main() -> int:
                     assignment = message_collector.collect(image, now_iso())
                     current.message_cluster_id = assignment.cluster_id
                     if recorder.active:
+                        recorder.append_hold(image.tobytes(), args.message_hold_seconds)
                         recorder.finalize()
                         current.video_finalized = True
 

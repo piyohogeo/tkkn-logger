@@ -1,6 +1,47 @@
 from __future__ import annotations
 
-from scripts.probe_capture import TargetWindow, frame_stats, save_ppm, select_capturable_windows
+from scripts.probe_capture import (
+    TargetWindow,
+    frame_stats,
+    resolve_client_crop,
+    save_ppm,
+    select_capturable_windows,
+)
+
+
+def test_resolve_client_crop_accepts_client_only_wgc_frame() -> None:
+    window = TargetWindow(
+        hwnd=1,
+        pid=2,
+        process_path=r"C:\Games\TKKN.EXE",
+        title="game",
+        visible=True,
+        minimized=False,
+        window_rect=(100, 100, 422, 367),
+        client_origin=(101, 126),
+        client_size=(320, 240),
+        dpi=96,
+    )
+
+    assert resolve_client_crop((320, 240), window) == (0, 0, 320, 240)
+
+
+def test_resolve_client_crop_removes_window_chrome(monkeypatch) -> None:
+    window = TargetWindow(
+        hwnd=1,
+        pid=2,
+        process_path=r"C:\Games\TKKN.EXE",
+        title="game",
+        visible=True,
+        minimized=False,
+        window_rect=(100, 100, 422, 367),
+        client_origin=(101, 126),
+        client_size=(320, 240),
+        dpi=96,
+    )
+    monkeypatch.setattr("scripts.probe_capture.extended_frame_bounds", lambda _hwnd: None)
+
+    assert resolve_client_crop((322, 267), window) == (1, 26, 321, 266)
 
 
 def test_frame_stats_for_black_frame() -> None:

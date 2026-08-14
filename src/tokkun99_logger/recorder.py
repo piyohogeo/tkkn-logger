@@ -58,6 +58,22 @@ class RunRecorder:
         else:
             self.pre_roll.append(frame)
 
+    def clear_pre_roll(self) -> None:
+        """Discard idle frames that must not carry into the next recording."""
+        self.pre_roll.clear()
+
+    def append_hold(self, frame: bytes, seconds: float) -> None:
+        """Extend an active recording by repeating one frame without waiting."""
+        self._validate_frame(frame)
+        if seconds < 0:
+            raise ValueError("Hold duration must be non-negative")
+        if not self.active:
+            raise RecorderError("Recorder is not active")
+        if self.paused:
+            raise RecorderError("Recorder is paused")
+        for _ in range(round(self.fps * seconds)):
+            self.write(frame)
+
     def pause(self) -> None:
         """Stop appending frames without closing the active FFmpeg process."""
         if not self.active:

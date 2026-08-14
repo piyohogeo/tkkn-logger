@@ -22,8 +22,12 @@ def test_ffmpeg_recorder_writes_h264_with_preroll(tmp_path) -> None:
         fps=5,
         pre_roll_seconds=1,
     )
+    previous_message = bytes([255, 255, 255]) * (16 * 16)
     red = bytes([0, 0, 255]) * (16 * 16)
     green = bytes([0, 255, 0]) * (16 * 16)
+    for _ in range(2):
+        recorder.observe(previous_message)
+    recorder.clear_pre_roll()
     for _ in range(3):
         recorder.observe(red)
     output = tmp_path / "run.mp4"
@@ -107,3 +111,39 @@ def test_pause_keeps_process_open_and_resume_appends_frames(tmp_path) -> None:
         check=True,
     )
     assert "nb_frames=2" in probe.stdout
+
+
+@pytest.mark.skipif(not FFMPEG.is_file() or not FFPROBE.is_file(), reason="Local FFmpeg is unavailable")
+def test_append_hold_repeats_frame_without_waiting(tmp_path) -> None:
+    recorder = RunRecorder(
+        ffmpeg_path=FFMPEG,
+        width=16,
+        height=16,
+        fps=5,
+        pre_roll_seconds=0,
+    )
+    frame = bytes([255, 255, 255]) * (16 * 16)
+    output = tmp_path / "message-hold.mp4"
+    recorder.start(output)
+    recorder.observe(frame)
+    recorder.append_hold(frame, 2.0)
+    recorder.finalize()
+
+    probe = subprocess.run(
+        [
+            FFPROBE,
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=nb_frames",
+            "-of",
+            "default=noprint_wrappers=1",
+            output,
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "nb_frames=11" in probe.stdout

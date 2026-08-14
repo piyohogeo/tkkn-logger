@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import statistics
 import sys
+import threading
 import time
 from typing import Callable
 
@@ -277,6 +278,141 @@ class MssCapture:
         self.capture.close()
 
 
+def extended_frame_bounds(hwnd: int) -> tuple[int, int, int, int] | None:
+    """Return the DWM-visible window bounds used by window capture when available."""
+    rect = wintypes.RECT()
+    dwmwa_extended_frame_bounds = 9
+    result = ctypes.windll.dwmapi.DwmGetWindowAttribute(
+        wintypes.HWND(hwnd),
+        wintypes.DWORD(dwmwa_extended_frame_bounds),
+        ctypes.byref(rect),
+        ctypes.sizeof(rect),
+    )
+    if result != 0:
+        return None
+    return rect.left, rect.top, rect.right, rect.bottom
+
+
+def resolve_client_crop(
+    frame_size: tuple[int, int], window: TargetWindow
+) -> tuple[int, int, int, int]:
+    """Resolve the client rectangle within a WGC window frame."""
+    frame_width, frame_height = frame_size
+    client_width, client_height = window.client_size
+    if frame_size == window.client_size:
+        return 0, 0, client_width, client_height
+    bounds_candidates = [window.window_rect]
+    extended = extended_frame_bounds(window.hwnd)
+    if extended is not None:
+        bounds_candidates.insert(0, extended)
+    client_x, client_y = window.client_origin
+    for left, top, right, bottom in bounds_candidates:
+        if (right - left, bottom - top) != frame_size:
+            continue
+        crop_left, crop_top = client_x - left, client_y - top
+        crop_right, crop_bottom = crop_left + client_width, crop_top + client_height
+        if 0 <= crop_left < crop_right <= frame_width and 0 <= crop_top < crop_bottom <= frame_height:
+            return crop_left, crop_top, crop_right, crop_bottom
+    raise RuntimeError(
+        f"Cannot locate client {window.client_size} inside WGC frame {frame_size}"
+    )
+
+
+class WgcCapture:
+    """Latest-frame adapter for Windows Graphics Capture window frames."""
+
+    def __init__(self, window: TargetWindow, fps: float = 30.0) -> None:
+        from windows_capture import WindowsCapture
+
+        if fps <= 0:
+            raise ValueError("fps must be positive")
+        self.window = window
+        self._condition = threading.Condition()
+        self._latest: bytes | None = None
+        self._error: BaseException | None = None
+        self._crop: tuple[int, int, int, int] | None = None
+        self._frame_size: tuple[int, int] | None = None
+        self.frames_arrived = 0
+        # MinUpdateInterval, secondary-window control, and dirty regions are
+        # Windows 11 24H2 additions. Older builds use WGC's default cadence;
+        # the logger still paces output at the requested FPS.
+        modern_session_options = sys.getwindowsversion().build >= 26100
+        self.os_update_throttle = modern_session_options
+        self.capture = WindowsCapture(
+            cursor_capture=False,
+            draw_border=None,
+            secondary_window=False if modern_session_options else None,
+            minimum_update_interval=(
+                max(1, round(1000 / fps)) if modern_session_options else None
+            ),
+            dirty_region=None,
+            window_hwnd=window.hwnd,
+        )
+        self.capture.frame_handler = self._on_frame_arrived
+        self.capture.closed_handler = self._on_closed
+        self.control = self.capture.start_free_threaded()
+
+    def _on_frame_arrived(self, frame, control) -> None:
+        try:
+            frame_size = (frame.width, frame.height)
+            if self._crop is None or self._frame_size != frame_size:
+                self._crop = resolve_client_crop(frame_size, self.window)
+                self._frame_size = frame_size
+            left, top, right, bottom = self._crop
+            latest = frame.frame_buffer[top:bottom, left:right, :4].tobytes()
+            expected = self.window.client_size[0] * self.window.client_size[1] * 4
+            if len(latest) != expected:
+                raise RuntimeError(f"Unexpected WGC client frame size: {len(latest)} != {expected}")
+            with self._condition:
+                self._latest = latest
+                self.frames_arrived += 1
+                self._condition.notify_all()
+        except BaseException as exc:
+            with self._condition:
+                self._error = exc
+                self._condition.notify_all()
+            control.stop()
+
+    def _on_closed(self) -> None:
+        with self._condition:
+            if self._error is None:
+                self._error = RuntimeError("The WGC target window was closed")
+            self._condition.notify_all()
+
+    def grab(self, timeout: float = 5.0) -> bytes:
+        deadline = time.monotonic() + timeout
+        with self._condition:
+            while self._latest is None and self._error is None:
+                if self.control.is_finished():
+                    break
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                self._condition.wait(timeout=min(0.1, remaining))
+            if self._error is not None:
+                raise RuntimeError("WGC capture failed") from self._error
+            if self._latest is not None:
+                return self._latest
+        if self.control.is_finished():
+            try:
+                self.control.wait()
+            except Exception as exc:
+                raise RuntimeError(f"WGC capture thread failed: {exc}") from exc
+            raise RuntimeError("WGC capture thread stopped before delivering a frame")
+        raise TimeoutError(f"WGC did not deliver a frame within {timeout:g} seconds")
+
+    def close(self) -> None:
+        if not self.control.is_finished():
+            self.control.stop()
+        self.control.wait()
+
+    def __enter__(self) -> "WgcCapture":
+        return self
+
+    def __exit__(self, *_args: object) -> None:
+        self.close()
+
+
 def frame_stats(frame: bytes) -> tuple[float, float]:
     pixels = len(frame) // 4
     stride = max(1, pixels // 4096)
@@ -366,7 +502,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--process-name", default="tkkn.exe")
     parser.add_argument("--title-contains", default="特訓")
-    parser.add_argument("--backend", choices=("auto", "mss", "gdi"), default="auto")
+    parser.add_argument("--backend", choices=("auto", "mss", "gdi", "wgc"), default="auto")
     parser.add_argument("--duration", type=float, default=3.0)
     parser.add_argument("--fps", type=float, default=30.0)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
@@ -413,6 +549,15 @@ def main() -> int:
                 report["status"] = "backend_unavailable"
     if args.backend in ("auto", "gdi"):
         backends.append(("gdi", GdiCapture))
+    if args.backend in ("auto", "wgc"):
+        try:
+            import windows_capture  # noqa: F401
+
+            backends.append(("wgc", lambda _left, _top, _width, _height: WgcCapture(window, args.fps)))
+        except ImportError as exc:
+            report["wgc_unavailable"] = str(exc)
+            if args.backend == "wgc":
+                report["status"] = "backend_unavailable"
 
     failures: list[dict[str, str]] = []
     for name, factory in backends:
