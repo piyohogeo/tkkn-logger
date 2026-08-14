@@ -32,6 +32,9 @@ def test_ffmpeg_recorder_writes_h264_with_preroll(tmp_path) -> None:
         recorder.observe(red)
     output = tmp_path / "run.mp4"
     recorder.start(output)
+    partial = tmp_path / "run.mp4.incomplete"
+    assert recorder.partial_path == partial
+    assert not output.exists()
     for _ in range(3):
         recorder.observe(green)
 
@@ -39,7 +42,7 @@ def test_ffmpeg_recorder_writes_h264_with_preroll(tmp_path) -> None:
 
     assert finalized == output
     assert output.is_file() and output.stat().st_size > 0
-    assert not (tmp_path / "run.partial.mp4").exists()
+    assert not partial.exists()
     probe = subprocess.run(
         [
             FFPROBE,

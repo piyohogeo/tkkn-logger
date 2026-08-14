@@ -93,7 +93,10 @@ class RunRecorder:
         if final_path.suffix.casefold() != ".mp4":
             raise ValueError("Final recording path must end in .mp4")
         final_path.parent.mkdir(parents=True, exist_ok=True)
-        partial_path = final_path.with_name(f"{final_path.stem}.partial.mp4")
+        # Keep the final .mp4 name unavailable until FFmpeg has written the
+        # trailer successfully.  The explicit ``-f mp4`` below means the
+        # temporary filename does not need to end in .mp4.
+        partial_path = final_path.with_name(f"{final_path.name}.incomplete")
         if partial_path.exists() or final_path.exists():
             raise FileExistsError(partial_path if partial_path.exists() else final_path)
         creation_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0

@@ -90,17 +90,27 @@ def recover_partial_videos(data_root: Path) -> RecoveryResult:
     recovered: list[Path] = []
     if not videos.exists():
         return RecoveryResult(())
-    for partial in videos.rglob("*.partial.mp4"):
+    partials = {
+        *videos.rglob("*.mp4.incomplete"),
+        *videos.rglob("*.partial.mp4"),  # Recover files left by older versions.
+    }
+    for partial in sorted(partials):
         source = partial.resolve()
         if videos not in source.parents:
             raise ValueError(f"Partial video escaped data root: {source}")
+        if source.parent == quarantine or quarantine in source.parents:
+            continue
         quarantine.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now().astimezone().strftime("%Y%m%dT%H%M%S%z")
-        target = quarantine / f"{source.stem.removesuffix('.partial')}-{stamp}.recovered-partial.mp4"
+        if source.name.endswith(".mp4.incomplete"):
+            stem = source.name.removesuffix(".mp4.incomplete")
+        else:
+            stem = source.name.removesuffix(".partial.mp4")
+        target = quarantine / f"{stem}-{stamp}.recovered.mp4.incomplete"
         suffix = 1
         while target.exists():
             target = quarantine / (
-                f"{source.stem.removesuffix('.partial')}-{stamp}-{suffix}.recovered-partial.mp4"
+                f"{stem}-{stamp}-{suffix}.recovered.mp4.incomplete"
             )
             suffix += 1
         os.replace(source, target)

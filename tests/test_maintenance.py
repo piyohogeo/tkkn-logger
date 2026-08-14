@@ -31,9 +31,10 @@ def test_artifact_stem_sorts_by_survival_and_contains_datetime() -> None:
     )
 
 
-def test_recover_partial_videos_moves_to_quarantine(tmp_path: Path) -> None:
+@pytest.mark.parametrize("filename", ["run.mp4.incomplete", "legacy.partial.mp4"])
+def test_recover_partial_videos_moves_to_quarantine(tmp_path: Path, filename: str) -> None:
     data = tmp_path / "data"
-    partial = data / "collection" / "videos" / "run.partial.mp4"
+    partial = data / "collection" / "videos" / filename
     partial.parent.mkdir(parents=True)
     partial.write_bytes(b"partial")
 
@@ -43,6 +44,7 @@ def test_recover_partial_videos_moves_to_quarantine(tmp_path: Path) -> None:
     assert len(result.recovered) == 1
     assert result.recovered[0].read_bytes() == b"partial"
     assert result.recovered[0].parent == data / "collection" / "videos" / "incomplete" / "recovered"
+    assert result.recovered[0].name.endswith(".mp4.incomplete")
     assert recover_partial_videos(data).recovered == ()
 
 
