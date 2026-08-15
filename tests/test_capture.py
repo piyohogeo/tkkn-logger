@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from tokkun99_logger.capture import TargetWindow, create_capture, locate_window
+from tokkun99_logger.capture import (
+    TargetWindow,
+    TargetWindowUnavailable,
+    create_capture,
+    locate_window,
+)
 
 
 def window(*, size: tuple[int, int] = (320, 240)) -> TargetWindow:
@@ -11,17 +16,17 @@ def window(*, size: tuple[int, int] = (320, 240)) -> TargetWindow:
 
 def test_locate_window_rejects_missing_multiple_and_wrong_size(monkeypatch) -> None:
     monkeypatch.setattr("tokkun99_logger.capture.enumerate_windows", lambda *_: [])
-    with pytest.raises(RuntimeError, match="見つかりません"):
+    with pytest.raises(TargetWindowUnavailable, match="見つかりません"):
         locate_window()
 
     monkeypatch.setattr("tokkun99_logger.capture.enumerate_windows", lambda *_: [window(), window()])
-    with pytest.raises(RuntimeError, match="複数"):
+    with pytest.raises(TargetWindowUnavailable, match="複数"):
         locate_window()
 
     monkeypatch.setattr(
         "tokkun99_logger.capture.enumerate_windows", lambda *_: [window(size=(640, 480))]
     )
-    with pytest.raises(RuntimeError, match="320x240"):
+    with pytest.raises(TargetWindowUnavailable, match="320x240"):
         locate_window()
 
 

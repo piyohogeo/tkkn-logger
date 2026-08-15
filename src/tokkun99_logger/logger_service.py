@@ -14,6 +14,7 @@ import numpy as np
 
 from .app_paths import AppPaths
 from .capture import (
+    TargetWindowUnavailable,
     create_capture,
     enable_per_monitor_dpi_awareness,
     locate_window,
@@ -93,6 +94,17 @@ class LoggerService:
             self._execute()
         except KeyboardInterrupt:
             self.request_stop()
+        except TargetWindowUnavailable as exc:
+            if self.config.auto_monitor:
+                self.emit("target_lost", str(exc))
+            else:
+                LOGGER.exception("Logger target window unavailable")
+                self.emit(
+                    "error",
+                    f"{type(exc).__name__}: {exc}",
+                    error_type=type(exc).__name__,
+                )
+                result = 1
         except Exception as exc:
             LOGGER.exception("Logger service failed")
             self.emit(
@@ -414,6 +426,11 @@ class LoggerService:
                             current.result_image = image.copy()
                     next_frame += interval
             except KeyboardInterrupt:
+                if current is not None:
+                    finish_active_video()
+                    persist_current("incomplete")
+                raise
+            except TargetWindowUnavailable:
                 if current is not None:
                     finish_active_video()
                     persist_current("incomplete")

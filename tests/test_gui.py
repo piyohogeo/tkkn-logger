@@ -3,7 +3,14 @@ from __future__ import annotations
 import pytest
 
 from tokkun99_logger.app_paths import AppPaths
-from tokkun99_logger.gui import GuiState, apply_event, ensure_data_directory
+from tokkun99_logger.capture import TargetWindowUnavailable
+from tokkun99_logger.gui import (
+    AUTO_MONITOR_DEFAULT,
+    GuiState,
+    LoggerGui,
+    apply_event,
+    ensure_data_directory,
+)
 from tokkun99_logger.logger_events import LoggerEvent
 
 
@@ -39,6 +46,37 @@ def test_gui_state_tracks_service_recording_and_error_events() -> None:
     state = apply_event(state, LoggerEvent("error", "capture failed"))
     assert state.service_state == "エラー"
     assert state.last_error == "capture failed"
+
+    state = apply_event(state, LoggerEvent("target_lost", "closed"))
+    assert state.service_state == "対象終了"
+    assert state.game_detection == "未検出"
+
+
+def test_auto_monitor_waits_for_target_then_starts(monkeypatch) -> None:
+    assert AUTO_MONITOR_DEFAULT is True
+
+    class BooleanValue:
+        def get(self) -> bool:
+            return True
+
+    gui = LoggerGui.__new__(LoggerGui)
+    gui.closing = False
+    gui.auto_monitor_var = BooleanValue()
+    gui.state = GuiState()
+    gui.worker = None
+    starts = []
+    gui.start = lambda: starts.append(True)
+
+    monkeypatch.setattr(
+        "tokkun99_logger.gui.locate_window",
+        lambda: (_ for _ in ()).throw(TargetWindowUnavailable("missing")),
+    )
+    gui._try_auto_start()
+    assert starts == []
+
+    monkeypatch.setattr("tokkun99_logger.gui.locate_window", lambda: object())
+    gui._try_auto_start()
+    assert starts == [True]
 
 
 def test_data_folder_action_resolves_only_configured_data_root(tmp_path) -> None:

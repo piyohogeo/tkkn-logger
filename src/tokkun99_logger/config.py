@@ -16,6 +16,7 @@ class LoggerConfig:
     fps: int = 30
     capture_backend: CaptureBackend = "wgc"
     retention_mode: RetentionMode = "records_only"
+    auto_monitor: bool = False
     sample_every: int = 10
     min_free_gb: float = 2.0
     result_record_seconds: float = 10.0

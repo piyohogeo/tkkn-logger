@@ -13,6 +13,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 from .app_paths import AppPaths
+from .capture import TargetWindowUnavailable, locate_window
 from .config import LoggerConfig
 from .dashboard import DashboardStats, load_dashboard
 from .logger_events import LoggerEvent
@@ -21,6 +22,8 @@ from .storage import Storage
 
 
 LOGGER = logging.getLogger(__name__)
+AUTO_MONITOR_POLL_MS = 1000
+AUTO_MONITOR_DEFAULT = True
 
 
 @dataclass(frozen=True)
@@ -63,6 +66,15 @@ def apply_event(state: GuiState, event: LoggerEvent) -> GuiState:
         )
     if event.kind == "error":
         return replace(state, service_state="エラー", last_error=event.message)
+    if event.kind == "target_lost":
+        return replace(
+            state,
+            service_state="対象終了",
+            game_detection="未検出",
+            game_state="UNKNOWN",
+            recording_state="待機",
+            recording_seconds=0.0,
+        )
     if event.kind == "service_stopped":
         return replace(
             state,
@@ -100,6 +112,7 @@ class LoggerGui:
         self._refresh_stats()
         self._render_state()
         root.after(100, self._poll_events)
+        root.after(AUTO_MONITOR_POLL_MS, self._poll_auto_monitor)
 
     def _build(self) -> None:
         frame = ttk.Frame(self.root, padding=14)
@@ -116,6 +129,7 @@ class LoggerGui:
         self.status_var = tk.StringVar(value="停止中")
         self.mode_var = tk.StringVar(value="records_only")
         self.capture_var = tk.StringVar(value="wgc")
+        self.auto_monitor_var = tk.BooleanVar(value=AUTO_MONITOR_DEFAULT)
 
         rows = (
             ("ゲーム", self.game_var),
@@ -153,8 +167,16 @@ class LoggerGui:
         self.capture_combo.grid(row=9, column=1, sticky="w", pady=4)
         ttk.Label(frame, text="WGCが既定 / MSSは代替").grid(row=9, column=2, sticky="w")
 
+        self.auto_monitor_check = ttk.Checkbutton(
+            frame,
+            text="自動監視（ゲーム起動・終了に連動）",
+            variable=self.auto_monitor_var,
+            command=self._on_auto_monitor_changed,
+        )
+        self.auto_monitor_check.grid(row=10, column=0, columnspan=3, sticky="w", pady=(4, 0))
+
         buttons = ttk.Frame(frame)
-        buttons.grid(row=10, column=0, columnspan=3, sticky="w", pady=(10, 6))
+        buttons.grid(row=11, column=0, columnspan=3, sticky="w", pady=(10, 6))
         self.start_button = ttk.Button(buttons, text="監視開始", command=self.start)
         self.stop_button = ttk.Button(buttons, text="停止", command=self.stop)
         self.open_button = ttk.Button(buttons, text="データを開く", command=self.open_data)
@@ -163,10 +185,10 @@ class LoggerGui:
         self.open_button.grid(row=0, column=2, padx=6)
 
         ttk.Label(frame, textvariable=self.status_var, wraplength=470).grid(
-            row=11, column=0, columnspan=3, sticky="w", pady=(4, 4)
+            row=12, column=0, columnspan=3, sticky="w", pady=(4, 4)
         )
         self.log = tk.Text(frame, width=68, height=8, state="disabled", wrap="word")
-        self.log.grid(row=12, column=0, columnspan=3, sticky="ew")
+        self.log.grid(row=13, column=0, columnspan=3, sticky="ew")
 
     def start(self) -> None:
         if self.worker is not None and self.worker.is_alive():
@@ -175,6 +197,7 @@ class LoggerGui:
             config = LoggerConfig(
                 capture_backend=self.capture_var.get(),  # type: ignore[arg-type]
                 retention_mode=self.mode_var.get(),  # type: ignore[arg-type]
+                auto_monitor=self.auto_monitor_var.get(),
             )
         except ValueError as exc:
             messagebox.showerror("設定エラー", str(exc), parent=self.root)
@@ -186,6 +209,7 @@ class LoggerGui:
         self.stop_button.configure(state="normal")
         self.mode_combo.configure(state="disabled")
         self.capture_combo.configure(state="disabled")
+        self.auto_monitor_check.configure(state="disabled")
 
     def stop(self) -> None:
         if self.service is None or self.worker is None or not self.worker.is_alive():
@@ -235,6 +259,7 @@ class LoggerGui:
             if event.kind.startswith("run_"):
                 self._refresh_stats()
             if event.kind == "error":
+                self.auto_monitor_var.set(False)
                 messagebox.showerror("ロガーエラー", event.message, parent=self.root)
             if event.kind == "service_stopped":
                 self._set_stopped_controls()
@@ -250,6 +275,10 @@ class LoggerGui:
         self.open_button.configure(state="normal")
         self.mode_combo.configure(state="readonly")
         self.capture_combo.configure(state="readonly")
+        self.auto_monitor_check.configure(state="normal")
+        self.start_button.configure(
+            state="disabled" if self.auto_monitor_var.get() else "normal"
+        )
 
     def _render_state(self) -> None:
         self.game_var.set(self.state.game_detection)
@@ -259,9 +288,45 @@ class LoggerGui:
         self.recording_var.set(
             f"{marker}{self.state.recording_state} {minutes:02d}:{seconds:02d}"
         )
-        self.status_var.set(self.state.last_error or self.state.service_state)
+        if (
+            self.state.service_state == "停止中"
+            and self.auto_monitor_var.get()
+            and not self.closing
+        ):
+            self.status_var.set("自動監視: 特訓のウィンドウを待っています")
+        else:
+            self.status_var.set(self.state.last_error or self.state.service_state)
         if self.state.service_state == "停止中" and not self.closing:
             self._set_stopped_controls()
+
+    def _on_auto_monitor_changed(self) -> None:
+        self._render_state()
+        self._try_auto_start()
+
+    def _try_auto_start(self) -> None:
+        if (
+            self.closing
+            or not self.auto_monitor_var.get()
+            or self.state.service_state != "停止中"
+            or (self.worker is not None and self.worker.is_alive())
+        ):
+            return
+        try:
+            locate_window()
+        except TargetWindowUnavailable:
+            return
+        except Exception as exc:
+            LOGGER.exception("Automatic target discovery failed")
+            self.auto_monitor_var.set(False)
+            self.status_var.set(f"自動監視の探索に失敗しました: {exc}")
+            self._set_stopped_controls()
+            return
+        self.start()
+
+    def _poll_auto_monitor(self) -> None:
+        self._try_auto_start()
+        if not self.closing:
+            self.root.after(AUTO_MONITOR_POLL_MS, self._poll_auto_monitor)
 
     def _render_log(self) -> None:
         self.log.configure(state="normal")

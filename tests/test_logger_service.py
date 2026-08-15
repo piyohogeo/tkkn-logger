@@ -5,6 +5,7 @@ import threading
 import pytest
 
 from tokkun99_logger.app_paths import AppPaths
+from tokkun99_logger.capture import TargetWindowUnavailable
 from tokkun99_logger.config import LoggerConfig
 from tokkun99_logger.logger_service import LoggerService
 
@@ -26,6 +27,44 @@ def test_service_converts_worker_exception_to_structured_events(tmp_path, monkey
     assert [event.kind for event in events] == ["service_starting", "error", "service_stopped"]
     assert events[1].data["error_type"] == "ValueError"
     assert value.running is False
+
+
+def test_auto_monitor_treats_target_loss_as_a_normal_stop(tmp_path, monkeypatch) -> None:
+    events = []
+    value = LoggerService(
+        LoggerConfig(auto_monitor=True),
+        AppPaths(tmp_path / "template", tmp_path / "data", tmp_path / "ffmpeg.exe"),
+        events.append,
+    )
+    monkeypatch.setattr(
+        value,
+        "_execute",
+        lambda: (_ for _ in ()).throw(TargetWindowUnavailable("closed")),
+    )
+
+    assert value.run() == 0
+    assert [event.kind for event in events] == [
+        "service_starting",
+        "target_lost",
+        "service_stopped",
+    ]
+
+
+def test_manual_monitor_reports_target_loss_as_an_error(tmp_path, monkeypatch) -> None:
+    events = []
+    value = service(tmp_path, events)
+    monkeypatch.setattr(
+        value,
+        "_execute",
+        lambda: (_ for _ in ()).throw(TargetWindowUnavailable("closed")),
+    )
+
+    assert value.run() == 1
+    assert [event.kind for event in events] == [
+        "service_starting",
+        "error",
+        "service_stopped",
+    ]
 
 
 def test_service_rejects_concurrent_run_and_accepts_stop_request(tmp_path, monkeypatch) -> None:

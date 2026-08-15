@@ -14,6 +14,7 @@ def test_logger_config_defaults_to_wgc_and_validates_values() -> None:
 
     assert config.capture_backend == "wgc"
     assert config.retention_mode == "records_only"
+    assert config.auto_monitor is False
     assert config.duration_seconds is None
     assert config.minimum_free_bytes == 2 * 1024**3
 

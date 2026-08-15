@@ -12,6 +12,10 @@ import threading
 import time
 
 
+class TargetWindowUnavailable(RuntimeError):
+    """The game window is absent or cannot currently be captured."""
+
+
 @dataclass(frozen=True)
 class TargetWindow:
     hwnd: int
@@ -151,12 +155,12 @@ def locate_window(
     candidates = enumerate_windows(process_name, title_contains)
     capturable = select_capturable_windows(candidates, process_name, title_contains)
     if not capturable:
-        raise RuntimeError("『特訓'99』が見つかりません")
+        raise TargetWindowUnavailable("『特訓'99』が見つかりません")
     if len(capturable) != 1:
-        raise RuntimeError(f"対象ウィンドウが複数あります: {len(capturable)}")
+        raise TargetWindowUnavailable(f"対象ウィンドウが複数あります: {len(capturable)}")
     window = capturable[0]
     if window.client_size != expected_size:
-        raise RuntimeError(
+        raise TargetWindowUnavailable(
             f"ゲーム画面が{expected_size[0]}x{expected_size[1]}ではありません: "
             f"{window.client_size[0]}x{window.client_size[1]}"
         )
@@ -268,7 +272,7 @@ class WgcCapture:
     def _on_closed(self) -> None:
         with self._condition:
             if self._error is None:
-                self._error = RuntimeError("The WGC target window was closed")
+                self._error = TargetWindowUnavailable("WGCの対象ウィンドウが閉じられました")
             self._condition.notify_all()
 
     def grab(self, timeout: float = 5.0) -> bytes:
@@ -282,6 +286,8 @@ class WgcCapture:
                     break
                 self._condition.wait(timeout=min(0.1, remaining))
             if self._error is not None:
+                if isinstance(self._error, TargetWindowUnavailable):
+                    raise self._error
                 raise RuntimeError("WGC capture failed") from self._error
             if self._latest is not None:
                 return self._latest
