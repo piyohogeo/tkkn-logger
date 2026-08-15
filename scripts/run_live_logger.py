@@ -10,7 +10,7 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from tokkun99_logger.app_paths import AppPaths  # noqa: E402
+from tokkun99_logger.app_paths import AppPaths, DEFAULT_FFMPEG  # noqa: E402
 from tokkun99_logger.config import LoggerConfig  # noqa: E402
 from tokkun99_logger.logger_events import LoggerEvent  # noqa: E402
 from tokkun99_logger.logger_service import LoggerService  # noqa: E402
@@ -27,7 +27,7 @@ def parse_args() -> argparse.Namespace:
         default="wgc",
         help="Screen capture backend; WGC is the default",
     )
-    parser.add_argument("--ffmpeg", type=Path, default=Path(r"C:\tools\ffmpeg\bin\ffmpeg.exe"))
+    parser.add_argument("--ffmpeg", type=Path, default=DEFAULT_FFMPEG)
     parser.add_argument(
         "--mode",
         choices=("records_only", "collect_samples", "collect_all"),

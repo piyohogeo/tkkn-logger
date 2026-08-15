@@ -45,13 +45,13 @@ Windows x64向けの一般配布形式は、PyInstaller `onedir`版だけです�
 .\.venv\Scripts\python.exe -m pip install -r requirements-build.txt
 ```
 
-既定では `C:\tools\ffmpeg` のGyan FFmpeg x64ビルドを使用し、テスト後に`onedir`を作ります。PowerShellの実行ポリシーを永続変更する必要はありません。
+既定では`packaging/ffmpeg-manifest.json`に固定したBtbN Windows x64 LGPL版FFmpegを`build/ffmpeg-lgpl`へ取得・検証し、テスト後に`onedir`を作ります。浮動するlatest URL、システムFFmpeg、Conda環境のFFmpegは使用しません。PowerShellの実行ポリシーを永続変更する必要はありません。
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_portable.ps1
 ```
 
-別のFFmpeg配置を使う場合は、そのルートに`bin/ffmpeg.exe`、`LICENSE`、`README.txt`が必要です。バイナリは`packaging/ffmpeg-manifest.json`に固定したSHA-256と一致しなければビルドを拒否します。
+同じ固定ビルドを既に展開している場合は、そのルートに`bin/ffmpeg.exe`、`bin/ffprobe.exe`、`LICENSE.txt`が必要です。ZIPを省略しても、実行ファイルのSHA-256、x64、configure、標準`mpeg4`エンコーダ、LGPL本文を検証します。別バージョンや別ビルドへ暗黙には切り替えません。
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_portable.ps1 `
@@ -78,7 +78,7 @@ dist/Tokkun99Logger/
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_portable.ps1
 ```
 
-同梱FFmpegのライセンスとビルド情報、Python依存のライセンスは`LICENSES`に収集します。現在のローカルビルドは未署名であり、Windows SmartScreenの警告が表示される可能性があります。この段階のローカル成果物は正式配布物ではありません。
+同梱FFmpegのLGPL v3本文、完全なconfigure情報、固定ソース参照、バイナリハッシュと、Python依存のライセンスは`LICENSES`に収集します。同梱するFFmpegはアプリへリンクせず、別プロセスとして起動します。対応する[FFmpegソース](https://github.com/FFmpeg/FFmpeg/tree/9b6c8969e05b4f0b29f0f85cd501be6b3e582e6b)と[BtbNビルド定義](https://github.com/BtbN/FFmpeg-Builds/tree/a99e8230eae00d1cee38f23076a7a1f55cd984e2)を固定しています。現在のローカルビルドは未署名であり、Windows SmartScreenの警告が表示される可能性があります。この段階のローカル成果物は正式配布物ではありません。
 
 ## CLI起動
 
@@ -110,7 +110,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_portabl
 - ウィンドウ移動には追従するが、サイズ変更には対応しない
 - 複数の対象ウィンドウがある場合は自動選択せず停止する
 
-キャプチャは既定でWindows Graphics Capture（WGC）、代替としてMSSを選択できます。録画はFFmpeg H.264を使用します。既定のFFmpegは `C:\tools\ffmpeg\bin\ffmpeg.exe` です。選択した方式が失敗しても別方式へ暗黙に切り替えません。
+キャプチャは既定でWindows Graphics Capture（WGC）、代替としてMSSを選択できます。新規録画はLGPL版FFmpegの標準`mpeg4`エンコーダ（MPEG-4 Part 2）を`-q:v 1`で使用し、MP4へ保存します。この最高品質設定も数学的な可逆圧縮ではなく、H.264よりファイルサイズが増える場合があります。既存のH.264 MP4は変換・削除せず、そのまま利用できます。選択したキャプチャ方式や録画コーデックが失敗しても別方式へ暗黙に切り替えません。
 
 ## 状態と保存方針
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
-import shutil
 import subprocess
 
 import pytest
@@ -9,22 +9,31 @@ import pytest
 from tokkun99_logger.recorder import RunRecorder
 
 
-FFMPEG = Path(r"C:\tools\ffmpeg\bin\ffmpeg.exe")
-FFPROBE = Path(r"C:\tools\ffmpeg\bin\ffprobe.exe")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_FFMPEG_ROOT = (
+    PROJECT_ROOT
+    / "build"
+    / "ffmpeg-lgpl"
+    / "extracted"
+    / "ffmpeg-n8.1.2-34-g9b6c8969e0-win64-lgpl-8.1"
+    / "bin"
+)
+FFMPEG = Path(os.environ.get("TOKKUN99_TEST_FFMPEG", DEFAULT_FFMPEG_ROOT / "ffmpeg.exe"))
+FFPROBE = Path(os.environ.get("TOKKUN99_TEST_FFPROBE", DEFAULT_FFMPEG_ROOT / "ffprobe.exe"))
 
 
 @pytest.mark.skipif(not FFMPEG.is_file() or not FFPROBE.is_file(), reason="Local FFmpeg is unavailable")
-def test_ffmpeg_recorder_writes_h264_with_preroll(tmp_path) -> None:
+def test_ffmpeg_recorder_writes_mpeg4_with_preroll(tmp_path) -> None:
     recorder = RunRecorder(
         ffmpeg_path=FFMPEG,
-        width=16,
-        height=16,
+        width=320,
+        height=240,
         fps=5,
         pre_roll_seconds=1,
     )
-    previous_message = bytes([255, 255, 255]) * (16 * 16)
-    red = bytes([0, 0, 255]) * (16 * 16)
-    green = bytes([0, 255, 0]) * (16 * 16)
+    previous_message = bytes([255, 255, 255]) * (320 * 240)
+    red = bytes([0, 0, 255]) * (320 * 240)
+    green = bytes([0, 255, 0]) * (320 * 240)
     for _ in range(2):
         recorder.observe(previous_message)
     recorder.clear_pre_roll()
@@ -51,7 +60,7 @@ def test_ffmpeg_recorder_writes_h264_with_preroll(tmp_path) -> None:
             "-select_streams",
             "v:0",
             "-show_entries",
-            "stream=codec_name,nb_frames",
+            "stream=codec_name,pix_fmt,width,height,avg_frame_rate,nb_frames",
             "-of",
             "default=noprint_wrappers=1",
             output,
@@ -60,8 +69,29 @@ def test_ffmpeg_recorder_writes_h264_with_preroll(tmp_path) -> None:
         text=True,
         check=True,
     )
-    assert "codec_name=h264" in probe.stdout
+    assert "codec_name=mpeg4" in probe.stdout
+    assert "width=320" in probe.stdout
+    assert "height=240" in probe.stdout
+    assert "pix_fmt=yuv420p" in probe.stdout
+    assert "avg_frame_rate=5/1" in probe.stdout
     assert "nb_frames=6" in probe.stdout
+
+
+def test_recorder_builds_fixed_mpeg4_command(tmp_path) -> None:
+    fake_ffmpeg = tmp_path / "ffmpeg.exe"
+    fake_ffmpeg.touch()
+    recorder = RunRecorder(ffmpeg_path=fake_ffmpeg, width=320, height=240, fps=30)
+
+    command = recorder.build_command(tmp_path / "run.mp4.incomplete")
+
+    assert command[command.index("-c:v") + 1] == "mpeg4"
+    assert command[command.index("-q:v") + 1] == "1"
+    assert command[command.index("-pix_fmt") + 1] == "yuv420p"
+    assert command[command.index("-movflags") + 1] == "+faststart"
+    assert command[command.index("-f", command.index("-i")) + 1] == "mp4"
+    assert "libx264" not in command
+    assert "-preset" not in command
+    assert "-crf" not in command
 
 
 def test_recorder_rejects_wrong_frame_size() -> None:

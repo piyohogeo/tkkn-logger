@@ -8,7 +8,10 @@ from PyInstaller.utils.hooks import collect_submodules
 project_root = Path(SPECPATH).resolve().parent
 source_root = project_root / "src"
 template_root = project_root / "data" / "template"
-ffmpeg_root = Path(os.environ.get("TOKKUN99_FFMPEG_ROOT", r"C:\tools\ffmpeg")).resolve()
+ffmpeg_root_value = os.environ.get("TOKKUN99_FFMPEG_ROOT")
+if not ffmpeg_root_value:
+    raise SystemExit("TOKKUN99_FFMPEG_ROOT must point to a verified LGPL FFmpeg distribution")
+ffmpeg_root = Path(ffmpeg_root_value).resolve()
 ffmpeg_path = ffmpeg_root / "bin" / "ffmpeg.exe"
 
 if not template_root.is_dir():

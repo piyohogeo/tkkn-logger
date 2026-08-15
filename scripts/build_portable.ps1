@@ -1,16 +1,31 @@
 param(
-    [string]$FfmpegRoot = "C:\tools\ffmpeg",
+    [string]$FfmpegRoot = "",
+    [string]$DistRoot = "",
     [switch]$SkipTests
 )
 
 $ErrorActionPreference = "Stop"
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $python = Join-Path $projectRoot ".venv\Scripts\python.exe"
-$distRoot = Join-Path $projectRoot "dist"
+if ([string]::IsNullOrWhiteSpace($DistRoot)) {
+    $distRoot = Join-Path $projectRoot "dist"
+}
+elseif ([IO.Path]::IsPathRooted($DistRoot)) {
+    $distRoot = [IO.Path]::GetFullPath($DistRoot)
+}
+else {
+    $distRoot = [IO.Path]::GetFullPath((Join-Path $projectRoot $DistRoot))
+}
+$repositoryPrefix = $projectRoot.TrimEnd('\') + '\'
+if (-not $distRoot.StartsWith($repositoryPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+    throw "Portable output must remain inside the repository: $distRoot"
+}
 $appRoot = Join-Path $distRoot "Tokkun99Logger"
 $workRoot = Join-Path $projectRoot "build\pyinstaller"
-$ffmpegRootResolved = (Resolve-Path -LiteralPath $FfmpegRoot).Path
+$ffmpegCacheRoot = Join-Path $projectRoot "build\ffmpeg-lgpl"
+$ffmpegExtractRoot = Join-Path $ffmpegCacheRoot "extracted"
 $ffmpegManifestPath = Join-Path $projectRoot "packaging\ffmpeg-manifest.json"
+$ffmpegVerifier = Join-Path $projectRoot "scripts\verify_ffmpeg_distribution.py"
 
 function Remove-SafeBuildDirectory([string]$Path) {
     $fullPath = [IO.Path]::GetFullPath($Path)
@@ -36,12 +51,42 @@ if (-not [Environment]::Is64BitProcess) {
     throw "The portable Windows build must run from a 64-bit process"
 }
 
-$ffmpeg = Join-Path $ffmpegRootResolved "bin\ffmpeg.exe"
 $ffmpegManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $ffmpegManifestPath | ConvertFrom-Json
+if ([IO.Path]::GetFileName($ffmpegManifest.archive_name) -ne $ffmpegManifest.archive_name) {
+    throw "FFmpeg manifest archive_name must be a file name"
+}
+if ([IO.Path]::GetFileName($ffmpegManifest.archive_root) -ne $ffmpegManifest.archive_root) {
+    throw "FFmpeg manifest archive_root must be a directory name"
+}
+$ffmpegArchive = $null
+if ([string]::IsNullOrWhiteSpace($FfmpegRoot)) {
+    New-Item -ItemType Directory -Force -Path $ffmpegCacheRoot | Out-Null
+    $ffmpegArchive = Join-Path $ffmpegCacheRoot $ffmpegManifest.archive_name
+    if (-not (Test-Path -LiteralPath $ffmpegArchive -PathType Leaf)) {
+        Write-Host "Downloading pinned LGPL FFmpeg archive..."
+        Invoke-WebRequest -UseBasicParsing -Uri $ffmpegManifest.archive_url -OutFile $ffmpegArchive
+    }
+    $actualArchiveHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $ffmpegArchive).Hash
+    if ($actualArchiveHash -ne $ffmpegManifest.archive_sha256) {
+        throw "FFmpeg archive SHA-256 does not match packaging/ffmpeg-manifest.json: $actualArchiveHash"
+    }
+    $candidateRoot = Join-Path $ffmpegExtractRoot $ffmpegManifest.archive_root
+    if (-not (Test-Path -LiteralPath $candidateRoot -PathType Container)) {
+        New-Item -ItemType Directory -Force -Path $ffmpegExtractRoot | Out-Null
+        Expand-Archive -LiteralPath $ffmpegArchive -DestinationPath $ffmpegExtractRoot
+    }
+    $ffmpegRootResolved = (Resolve-Path -LiteralPath $candidateRoot).Path
+}
+else {
+    $ffmpegRootResolved = (Resolve-Path -LiteralPath $FfmpegRoot).Path
+}
+
+$ffmpeg = Join-Path $ffmpegRootResolved "bin\ffmpeg.exe"
+$ffprobe = Join-Path $ffmpegRootResolved "bin\ffprobe.exe"
 foreach ($required in @(
     $ffmpeg,
-    (Join-Path $ffmpegRootResolved "LICENSE"),
-    (Join-Path $ffmpegRootResolved "README.txt"),
+    $ffprobe,
+    (Join-Path $ffmpegRootResolved $ffmpegManifest.license_file),
     (Join-Path $projectRoot "data\template\states\v1\profile.json"),
     (Join-Path $projectRoot "data\template\glyphs\v1\profile.json")
 )) {
@@ -49,16 +94,31 @@ foreach ($required in @(
         throw "Required build input not found: $required"
     }
 }
-$actualFfmpegHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $ffmpeg).Hash
-if ($actualFfmpegHash -ne $ffmpegManifest.sha256) {
-    throw "FFmpeg SHA-256 does not match packaging/ffmpeg-manifest.json: $actualFfmpegHash"
-}
+$verifyArguments = @(
+    $ffmpegVerifier,
+    "--manifest", $ffmpegManifestPath,
+    "--ffmpeg-root", $ffmpegRootResolved
+)
+if ($null -ne $ffmpegArchive) { $verifyArguments += @("--archive", $ffmpegArchive) }
+& $python @verifyArguments
+if ($LASTEXITCODE -ne 0) { throw "FFmpeg distribution verification failed" }
 
 if (-not $SkipTests) {
-    & $python -m pytest -q
-    if ($LASTEXITCODE -ne 0) { throw "Tests failed" }
+    $env:TOKKUN99_TEST_FFMPEG = $ffmpeg
+    $env:TOKKUN99_TEST_FFPROBE = $ffprobe
+    try {
+        & $python -m pytest -q
+        if ($LASTEXITCODE -ne 0) { throw "Tests failed" }
+    }
+    finally {
+        Remove-Item Env:TOKKUN99_TEST_FFMPEG -ErrorAction SilentlyContinue
+        Remove-Item Env:TOKKUN99_TEST_FFPROBE -ErrorAction SilentlyContinue
+    }
 }
 
+if (Test-Path -LiteralPath (Join-Path $appRoot "data")) {
+    throw "Existing portable data must be backed up and removed before a clean build: $appRoot\data"
+}
 Remove-SafeBuildDirectory $appRoot
 Remove-SafeBuildDirectory $workRoot
 New-Item -ItemType Directory -Force -Path $distRoot | Out-Null
@@ -98,6 +158,9 @@ foreach ($requiredOutput in @(
     (Join-Path $appRoot "_internal\template\states\v1\profile.json"),
     (Join-Path $appRoot "_internal\template\glyphs\v1\profile.json"),
     (Join-Path $appRoot "LICENSES\THIRD_PARTY_NOTICES.txt"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-LGPL-3.0-or-later.txt"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-BUILD.txt"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-MANIFEST.json"),
     (Join-Path $appRoot "README.txt"),
     (Join-Path $appRoot "VERSION.txt")
 )) {

@@ -1,7 +1,15 @@
 {
-  "version": "4.3.1-2021-01-01-full_build-www.gyan.dev",
-  "sha256": "73D8BCB0F2178900A44BAF51B311733ED39E6B2C3361ED737CD62C3E92B2F329",
-  "license": "GPL-3.0",
-  "build_url": "https://www.gyan.dev/ffmpeg/builds/",
-  "source_url": "https://github.com/FFmpeg/FFmpeg/commit/89daac5fe2"
+  "provider": "BtbN/FFmpeg-Builds",
+  "release_tag": "autobuild-2026-07-31-14-10",
+  "version": "n8.1.2-34-g9b6c8969e0",
+  "variant": "win64-lgpl-8.1",
+  "license": "LGPL-3.0-or-later",
+  "license_file": "LICENSE.txt",
+  "archive_name": "ffmpeg-n8.1.2-34-g9b6c8969e0-win64-lgpl-8.1.zip",
+  "archive_root": "ffmpeg-n8.1.2-34-g9b6c8969e0-win64-lgpl-8.1",
+  "archive_url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-07-31-14-10/ffmpeg-n8.1.2-34-g9b6c8969e0-win64-lgpl-8.1.zip",
+  "archive_sha256": "089e4169e93b2b3f3acbfced3c0704d24276a225641bdda04d796d28b07a2a38",
+  "ffmpeg_sha256": "6099366f31293cdc6c283ea44ffb32f07e3139cd0caf6d0db652a7d064d089cb",
+  "ffmpeg_source_url": "https://github.com/FFmpeg/FFmpeg/tree/9b6c8969e05b4f0b29f0f85cd501be6b3e582e6b",
+  "build_source_url": "https://github.com/BtbN/FFmpeg-Builds/tree/a99e8230eae00d1cee38f23076a7a1f55cd984e2"
 }

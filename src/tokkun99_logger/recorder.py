@@ -22,7 +22,6 @@ class RunRecorder:
         height: int = 240,
         fps: int = 30,
         pre_roll_seconds: float = 2.0,
-        crf: int = 18,
     ) -> None:
         if width <= 0 or height <= 0 or fps <= 0 or pre_roll_seconds < 0:
             raise ValueError("Invalid recorder dimensions, FPS, or pre-roll")
@@ -32,7 +31,6 @@ class RunRecorder:
         self.width = width
         self.height = height
         self.fps = fps
-        self.crf = crf
         self.frame_bytes = width * height * 3
         self.pre_roll = deque(maxlen=round(fps * pre_roll_seconds))
         self.process: subprocess.Popen[bytes] | None = None
@@ -100,36 +98,7 @@ class RunRecorder:
         if partial_path.exists() or final_path.exists():
             raise FileExistsError(partial_path if partial_path.exists() else final_path)
         creation_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
-        command = [
-            str(self.ffmpeg_path),
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-f",
-            "rawvideo",
-            "-pixel_format",
-            "bgr24",
-            "-video_size",
-            f"{self.width}x{self.height}",
-            "-framerate",
-            str(self.fps),
-            "-i",
-            "pipe:0",
-            "-an",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "veryfast",
-            "-crf",
-            str(self.crf),
-            "-pix_fmt",
-            "yuv420p",
-            "-movflags",
-            "+faststart",
-            "-f",
-            "mp4",
-            str(partial_path),
-        ]
+        command = self.build_command(partial_path)
         self.process = subprocess.Popen(
             command,
             stdin=subprocess.PIPE,
@@ -149,6 +118,37 @@ class RunRecorder:
         except Exception:
             self._close_process()
             raise
+
+    def build_command(self, partial_path: Path) -> list[str]:
+        """Build the fixed LGPL-compatible MPEG-4 Part 2 command."""
+        return [
+            str(self.ffmpeg_path),
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "rawvideo",
+            "-pixel_format",
+            "bgr24",
+            "-video_size",
+            f"{self.width}x{self.height}",
+            "-framerate",
+            str(self.fps),
+            "-i",
+            "pipe:0",
+            "-an",
+            "-c:v",
+            "mpeg4",
+            "-q:v",
+            "1",
+            "-pix_fmt",
+            "yuv420p",
+            "-movflags",
+            "+faststart",
+            "-f",
+            "mp4",
+            str(partial_path),
+        ]
 
     def write(self, frame: bytes) -> None:
         self._validate_frame(frame)

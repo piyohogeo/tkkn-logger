@@ -10,7 +10,15 @@ import tempfile
 from .data_layout import DataLayout
 
 
-DEFAULT_FFMPEG = Path(r"C:\tools\ffmpeg\bin\ffmpeg.exe")
+DEFAULT_FFMPEG = (
+    Path(__file__).resolve().parents[2]
+    / "build"
+    / "ffmpeg-lgpl"
+    / "extracted"
+    / "ffmpeg-n8.1.2-34-g9b6c8969e0-win64-lgpl-8.1"
+    / "bin"
+    / "ffmpeg.exe"
+)
 
 
 @dataclass(frozen=True)
