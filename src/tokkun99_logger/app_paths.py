@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import sys
 import tempfile
 
 from .data_layout import DataLayout
@@ -24,6 +25,19 @@ class AppPaths:
     ) -> "AppPaths":
         root = project_root.resolve()
         return cls(root / "data" / "template", root / "data", ffmpeg_path)
+
+    @classmethod
+    def for_application(cls, project_root: Path) -> "AppPaths":
+        """Resolve development or PyInstaller onedir paths without mixing writes/resources."""
+        if getattr(sys, "frozen", False):
+            bundle_root = Path(getattr(sys, "_MEIPASS")).resolve()
+            executable_root = Path(sys.executable).resolve().parent
+            return cls(
+                resource_root=bundle_root / "template",
+                data_root=executable_root / "data",
+                ffmpeg_path=bundle_root / "ffmpeg.exe",
+            )
+        return cls.for_development(project_root)
 
     @property
     def layout(self) -> DataLayout:

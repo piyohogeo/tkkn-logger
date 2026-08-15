@@ -35,6 +35,51 @@ Pythonから直接起動する場合:
 .\.venv\Scripts\python.exe scripts\run_gui.py
 ```
 
+## ポータブルWindows版のローカルビルド
+
+Windows x64向けの一般配布形式は、PyInstaller `onedir`版だけです。`onefile`版、ポータブルPython＋BAT版、インストーラーは作りません。ビルド成果物はGit管理せず、`dist/Tokkun99Logger`へ生成します。
+
+専用`.venv`へビルド依存を導入します。
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-build.txt
+```
+
+既定では `C:\tools\ffmpeg` のGyan FFmpeg x64ビルドを使用し、テスト後に`onedir`を作ります。PowerShellの実行ポリシーを永続変更する必要はありません。
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_portable.ps1
+```
+
+別のFFmpeg配置を使う場合は、そのルートに`bin/ffmpeg.exe`、`LICENSE`、`README.txt`が必要です。バイナリは`packaging/ffmpeg-manifest.json`に固定したSHA-256と一致しなければビルドを拒否します。
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build_portable.ps1 `
+  -FfmpegRoot "D:\Tools\ffmpeg"
+```
+
+生成物は次の構成です。
+
+```text
+dist/Tokkun99Logger/
+  Tokkun99Logger.exe
+  README.txt
+  VERSION.txt
+  LICENSES/
+  _internal/
+    ffmpeg.exe
+    template/
+    Python・OpenCV・Tcl/Tk等
+```
+
+空の`data`は同梱しません。初回起動時にEXEと同じフォルダへ作成し、固定テンプレートやFFmpegが入る`_internal`とは分離します。PythonとCondaをPATHから除外した起動・安全停止スモークは次で再実行できます。検証用に作成した`data`だけを安全停止後に削除します。既存`data`がある場合は保護のため実行を拒否します。
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_portable.ps1
+```
+
+同梱FFmpegのライセンスとビルド情報、Python依存のライセンスは`LICENSES`に収集します。現在のローカルビルドは未署名であり、Windows SmartScreenの警告が表示される可能性があります。この段階のローカル成果物は正式配布物ではありません。
+
 ## CLI起動
 
 1. ゲームを起動し、タイトル画面を表示する。

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -42,3 +43,19 @@ def test_development_paths_preserve_existing_layout(tmp_path: Path) -> None:
     assert paths.resource_root == tmp_path / "data" / "template"
     assert paths.data_root == tmp_path / "data"
     assert paths.layout.template == tmp_path / "data" / "template"
+
+
+def test_frozen_application_separates_bundle_resources_from_portable_data(
+    tmp_path: Path, monkeypatch
+) -> None:
+    bundle = tmp_path / "Tokkun99Logger" / "_internal"
+    executable = tmp_path / "Tokkun99Logger" / "Tokkun99Logger.exe"
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "_MEIPASS", str(bundle), raising=False)
+    monkeypatch.setattr(sys, "executable", str(executable))
+
+    paths = AppPaths.for_application(tmp_path / "ignored-project-root")
+
+    assert paths.resource_root == bundle / "template"
+    assert paths.data_root == executable.parent / "data"
+    assert paths.ffmpeg_path == bundle / "ffmpeg.exe"

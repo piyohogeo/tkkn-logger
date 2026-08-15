@@ -11,7 +11,7 @@ from .logging_setup import configure_logging
 
 def main() -> int:
     project_root = Path(__file__).resolve().parents[2]
-    paths = AppPaths.for_development(project_root)
+    paths = AppPaths.for_application(project_root)
     configure_logging(paths.layout.log)
     run_gui(paths)
     return 0
