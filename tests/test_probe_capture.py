@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from scripts.probe_capture import (
+from scripts.probe_capture import frame_stats, save_ppm
+from tokkun99_logger.capture import (
     TargetWindow,
-    frame_stats,
     resolve_client_crop,
-    save_ppm,
     select_capturable_windows,
 )
 
@@ -39,7 +38,7 @@ def test_resolve_client_crop_removes_window_chrome(monkeypatch) -> None:
         client_size=(320, 240),
         dpi=96,
     )
-    monkeypatch.setattr("scripts.probe_capture.extended_frame_bounds", lambda _hwnd: None)
+    monkeypatch.setattr("tokkun99_logger.capture.extended_frame_bounds", lambda _hwnd: None)
 
     assert resolve_client_crop((322, 267), window) == (1, 26, 321, 266)
 

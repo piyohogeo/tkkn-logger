@@ -9,6 +9,7 @@ from pathlib import Path
 @dataclass(frozen=True)
 class DataLayout:
     root: Path
+    template_root: Path | None = None
 
     @property
     def collection(self) -> Path:
@@ -48,7 +49,7 @@ class DataLayout:
 
     @property
     def template(self) -> Path:
-        return self.root / "template"
+        return self.template_root if self.template_root is not None else self.root / "template"
 
     @property
     def state_profile(self) -> Path:

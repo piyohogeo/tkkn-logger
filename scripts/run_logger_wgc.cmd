@@ -2,9 +2,9 @@
 setlocal
 cd /d "%~dp0.."
 
-echo Tokkun '99 automatic logger - experimental Windows Graphics Capture
+echo Tokkun '99 automatic logger - Windows Graphics Capture
 echo Observation only. No game input is ever sent.
-echo Recording remains 30 FPS. Use run_logger.cmd for the established MSS backend.
+echo Recording remains 30 FPS. WGC is also the default in run_logger.cmd.
 echo Press Ctrl+C to stop safely.
 echo.
 

@@ -17,6 +17,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from tokkun99_logger.message_collector import MessageCollector  # noqa: E402
 from tokkun99_logger.data_layout import DataLayout  # noqa: E402
+from tokkun99_logger.dashboard import load_dashboard  # noqa: E402
 from tokkun99_logger.result_reader import ResultReader  # noqa: E402
 from tokkun99_logger.storage import ScoreCorrection, Storage  # noqa: E402
 
@@ -31,48 +32,21 @@ def storage() -> Storage:
 
 
 def command_stats(_: argparse.Namespace) -> int:
-    with storage().connect() as connection:
-        totals = connection.execute(
-            """
-            SELECT COUNT(*) AS total,
-                   SUM(status = 'complete') AS complete,
-                   SUM(status = 'needs_review') AS needs_review,
-                   SUM(status = 'incomplete') AS incomplete
-            FROM runs
-            """
-        ).fetchone()
-        survival = connection.execute(
-            """
-            SELECT survival_ms, run_id, ended_at FROM runs
-            WHERE status = 'complete' ORDER BY survival_ms DESC LIMIT 1
-            """
-        ).fetchone()
-        bullets = connection.execute(
-            """
-            SELECT bullet_count, run_id, ended_at FROM runs
-            WHERE status = 'complete' ORDER BY bullet_count DESC LIMIT 1
-            """
-        ).fetchone()
-        messages = connection.execute(
-            """
-            SELECT COUNT(*) AS clusters,
-                   SUM(label_text IS NOT NULL) AS labeled,
-                   SUM(is_verified = 1) AS verified,
-                   COALESCE(SUM(observation_count), 0) AS observations
-            FROM message_clusters WHERE merged_into IS NULL
-            """
-        ).fetchone()
+    stats = load_dashboard(storage())
     print(
-        f"Runs: total={totals['total']}, complete={totals['complete'] or 0}, "
-        f"needs_review={totals['needs_review'] or 0}, incomplete={totals['incomplete'] or 0}"
+        f"Runs: total={stats.total_runs}, complete={stats.complete_runs}, "
+        f"needs_review={stats.needs_review_runs}, incomplete={stats.incomplete_runs}"
     )
-    if survival:
-        print(f"Survival record: {survival['survival_ms'] / 1000:.3f}s ({survival['run_id']})")
-    if bullets:
-        print(f"Bullet record: {bullets['bullet_count']} ({bullets['run_id']})")
+    if stats.survival_record:
+        print(
+            f"Survival record: {stats.survival_record.value / 1000:.3f}s "
+            f"({stats.survival_record.run_id})"
+        )
+    if stats.bullet_record:
+        print(f"Bullet record: {stats.bullet_record.value} ({stats.bullet_record.run_id})")
     print(
-        f"Messages: clusters={messages['clusters']}, labeled={messages['labeled'] or 0}, "
-        f"verified={messages['verified'] or 0}, observations={messages['observations']}"
+        f"Messages: clusters={stats.message_clusters}, labeled={stats.labeled_messages}, "
+        f"verified={stats.verified_messages}, observations={stats.message_observations}"
     )
     return 0
 
