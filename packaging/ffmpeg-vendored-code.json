@@ -1,0 +1,1395 @@
+{
+  "schema_version": 1,
+  "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
+  "audited_recipe_count": 77,
+  "audited_recipes": [
+    "amf",
+    "aom",
+    "aribb24",
+    "brotli",
+    "chromaprint",
+    "dav1d",
+    "ffnvcodec",
+    "fftw3",
+    "fontconfig",
+    "freetype",
+    "freetype-bootstrap",
+    "fribidi",
+    "gme",
+    "gmp",
+    "harfbuzz",
+    "kvazaar",
+    "lcevcdec",
+    "lcms2",
+    "libaribcaption",
+    "libass",
+    "libbluray",
+    "libiconv",
+    "libjxl",
+    "libmp3lame",
+    "libogg",
+    "libopenmpt",
+    "libopus",
+    "libplacebo",
+    "libpng",
+    "librist",
+    "libsamplerate",
+    "libssh",
+    "libtheora",
+    "libudfread",
+    "libunibreak",
+    "libva",
+    "libvorbis",
+    "libvpx",
+    "libwebp",
+    "libxml2",
+    "libzmq",
+    "lilv",
+    "lv2",
+    "mbedtls",
+    "mingw",
+    "mingw-std-threads",
+    "onevpl",
+    "openal",
+    "openapv",
+    "opencl",
+    "opencore-amr",
+    "openh264",
+    "openjpeg",
+    "openssl",
+    "rav1e",
+    "sdl",
+    "serd",
+    "shaderc",
+    "snappy",
+    "sord",
+    "soxr",
+    "spirv-cross",
+    "spirv-headers",
+    "sratom",
+    "srt",
+    "svtav1",
+    "twolame",
+    "uavs3d",
+    "vmaf",
+    "vulkan-headers",
+    "vulkan-loader",
+    "vvenc",
+    "xz",
+    "zimg",
+    "zix",
+    "zlib",
+    "zvbi"
+  ],
+  "vendored_code_review_complete": true,
+  "release_ready": false,
+  "review_note": "All seventy-seven fixed recipe source trees have been audited for vendored-code paths. Linked notices are staged; overall release readiness remains subject to the remaining audit and release gates.",
+  "dependencies": [
+    {
+      "id": "openal-fmt",
+      "parent_recipe": "openal",
+      "source_recipe": "scripts.d-50-openal.sh",
+      "source_path": "fmt-11.2.0",
+      "classification": "linked",
+      "license_sources": ["fmt-11.2.0/LICENSE"],
+      "evidence": "OpenAL CMake adds fmt-11.2.0 and links alsoft::fmt into OpenAL."
+    },
+    {
+      "id": "openal-gsl",
+      "parent_recipe": "openal",
+      "source_recipe": "scripts.d-50-openal.sh",
+      "source_path": "gsl",
+      "classification": "linked",
+      "license_sources": ["gsl/LICENSE"],
+      "evidence": "OpenAL compilation includes the vendored GSL headers."
+    },
+    {
+      "id": "openal-pffft",
+      "parent_recipe": "openal",
+      "source_recipe": "scripts.d-50-openal.sh",
+      "source_path": "common/pffft.cpp",
+      "classification": "linked",
+      "license_sources": ["LICENSE-pffft"],
+      "evidence": "OpenAL compiles common/pffft.cpp into the library."
+    },
+    {
+      "id": "sdl-hidapi",
+      "parent_recipe": "sdl",
+      "source_recipe": "scripts.d-50-sdl.sh",
+      "source_path": "src/hidapi",
+      "classification": "linked",
+      "license_sources": [
+        "src/hidapi/LICENSE.txt",
+        "src/hidapi/LICENSE-bsd.txt",
+        "src/hidapi/LICENSE-gpl3.txt",
+        "src/hidapi/LICENSE-orig.txt"
+      ],
+      "evidence": "SDL CMake includes src/hidapi sources; all upstream licensing alternatives are preserved."
+    },
+    {
+      "id": "sdl-yuv2rgb",
+      "parent_recipe": "sdl",
+      "source_recipe": "scripts.d-50-sdl.sh",
+      "source_path": "src/video/yuv2rgb",
+      "classification": "linked",
+      "license_sources": ["src/video/yuv2rgb/LICENSE"],
+      "evidence": "SDL CMake includes src/video/yuv2rgb sources."
+    },
+    {
+      "id": "libopenmpt-minimp3",
+      "parent_recipe": "libopenmpt",
+      "source_recipe": "scripts.d-50-openmpt.sh",
+      "source_path": "include/minimp3",
+      "classification": "linked",
+      "license_sources": ["include/minimp3/LICENSE"],
+      "evidence": "BtbN sets NO_MPG123=1 and NO_MINIMP3=0, selecting minimp3 in the libopenmpt Makefile."
+    },
+    {
+      "id": "libopenmpt-miniz",
+      "parent_recipe": "libopenmpt",
+      "source_recipe": "scripts.d-50-openmpt.sh",
+      "source_path": "include/miniz",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets NO_ZLIB=0 and depends on zlib, so the Makefile does not select miniz."
+    },
+    {
+      "id": "libopenmpt-stb-vorbis",
+      "parent_recipe": "libopenmpt",
+      "source_recipe": "scripts.d-50-openmpt.sh",
+      "source_path": "include/stb_vorbis",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN enables external Ogg, Vorbis, and Vorbisfile, so the Makefile does not select stb_vorbis."
+    },
+    {
+      "id": "libopenmpt-pugixml",
+      "parent_recipe": "libopenmpt",
+      "source_recipe": "scripts.d-50-openmpt.sh",
+      "source_path": "include/pugixml",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "pugixml belongs to the XMP OpenMPT target and BtbN sets XMP_OPENMPT=0."
+    },
+    {
+      "id": "libopenmpt-nlohmann-json",
+      "parent_recipe": "libopenmpt",
+      "source_recipe": "scripts.d-50-openmpt.sh",
+      "source_path": "include/nlohmann-json",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "No nlohmann-json source is present in the libopenmpt static-library source lists selected by the BtbN Makefile."
+    },
+    {
+      "id": "libiconv-libcharset",
+      "parent_recipe": "libiconv",
+      "source_recipe": "scripts.d-20-libiconv.sh",
+      "source_path": "libcharset",
+      "classification": "linked",
+      "license_sources": ["libcharset/COPYING.LIB"],
+      "evidence": "The fixed libiconv configure and install build includes its libcharset library."
+    },
+    {
+      "id": "chromaprint-kissfft",
+      "parent_recipe": "chromaprint",
+      "source_recipe": "scripts.d-50-chromaprint.sh",
+      "source_path": "src/3rdparty/kissfft",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN explicitly selects FFT_LIB=fftw3, so Chromaprint does not select vendored kissfft."
+    },
+    {
+      "id": "chromaprint-googletest",
+      "parent_recipe": "chromaprint",
+      "source_recipe": "scripts.d-50-chromaprint.sh",
+      "source_path": "src/3rdparty/googletest",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets BUILD_TESTS=OFF."
+    },
+    {
+      "id": "gme-emu2413",
+      "parent_recipe": "gme",
+      "source_recipe": "scripts.d-50-gme.sh",
+      "source_path": "gme/ext",
+      "classification": "linked",
+      "license_sources": ["gme/ext/LICENSE"],
+      "evidence": "USE_GME_NSF defaults on and gme/CMakeLists.txt adds ext/emu2413.c to the static library."
+    },
+    {
+      "id": "kvazaar-threadwrapper",
+      "parent_recipe": "kvazaar",
+      "source_recipe": "scripts.d-50-kvazaar.sh",
+      "source_path": "src/threadwrapper",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The fixed recipe uses Autotools, whose src/Makefile.am lists threadwrapper only as EXTRA_DIST; the CMake-only fallback is not compiled."
+    },
+    {
+      "id": "libzmq-wepoll",
+      "parent_recipe": "libzmq",
+      "source_recipe": "scripts.d-50-libzmq.sh",
+      "source_path": "external/wepoll",
+      "classification": "linked",
+      "license_sources": ["external/wepoll/license.txt"],
+      "evidence": "BtbN selects POLLER=epoll on Windows and libzmq CMake adds external/wepoll sources for that combination."
+    },
+    {
+      "id": "libzmq-sha1",
+      "parent_recipe": "libzmq",
+      "source_recipe": "scripts.d-50-libzmq.sh",
+      "source_path": "external/sha1",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets ENABLE_DRAFTS=OFF; WebSocket support and its builtin SHA1 source therefore remain disabled."
+    },
+    {
+      "id": "libzmq-unity",
+      "parent_recipe": "libzmq",
+      "source_recipe": "scripts.d-50-libzmq.sh",
+      "source_path": "external/unity",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets BUILD_TESTS=OFF."
+    },
+    {
+      "id": "svtav1-fastfeat",
+      "parent_recipe": "svtav1",
+      "source_recipe": "scripts.d-50-svtav1.sh",
+      "source_path": "third_party/fastfeat",
+      "classification": "linked",
+      "license_sources": ["third_party/fastfeat/LICENSE"],
+      "evidence": "SVT-AV1 adds FASTFEAT objects to the encoder library even when apps and tests are disabled."
+    },
+    {
+      "id": "svtav1-safestringlib",
+      "parent_recipe": "svtav1",
+      "source_recipe": "scripts.d-50-svtav1.sh",
+      "source_path": "third_party/safestringlib",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Safe-string objects are attached to the app and test targets; BtbN disables both BUILD_APPS and BUILD_TESTING."
+    },
+    {
+      "id": "vvenc-nlohmann-json",
+      "parent_recipe": "vvenc",
+      "source_recipe": "scripts.d-50-vvenc.sh",
+      "source_path": "thirdparty/nlohmann_json",
+      "classification": "linked",
+      "license_sources": ["thirdparty/nlohmann_json/LICENSE.MIT"],
+      "evidence": "VVENC_ENABLE_THIRDPARTY_JSON defaults on and supplies headers and compile definitions to the vvenc library target."
+    },
+    {
+      "id": "vvenc-simde",
+      "parent_recipe": "vvenc",
+      "source_recipe": "scripts.d-50-vvenc.sh",
+      "source_path": "thirdparty/simde",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The fixed win64 x86 build uses native x86 SIMD; vendored SIMDe is selected for non-x86 targets."
+    },
+    {
+      "id": "zlib-minizip",
+      "parent_recipe": "zlib",
+      "source_recipe": "scripts.d-20-zlib.sh",
+      "source_path": "contrib/minizip",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The fixed recipe runs zlib's configure and installs libz; the contrib/minizip target is not selected."
+    },
+    {
+      "id": "libxml2-html-tokenizer-tests",
+      "parent_recipe": "libxml2",
+      "source_recipe": "scripts.d-25-libxml2.sh",
+      "source_path": "test/html-tokenizer and result/html-tokenizer",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "These WHATWG tokenizer files are test inputs/results and are not installed into the static libxml2 library."
+    },
+    {
+      "id": "openssl-text-template",
+      "parent_recipe": "openssl",
+      "source_recipe": "scripts.d-25-openssl.sh",
+      "source_path": "external/perl/Text-Template-1.56",
+      "classification": "build_tool",
+      "license_sources": [],
+      "evidence": "Vendored Perl Text::Template supports OpenSSL Configure generation; it is not linked into the installed static libraries."
+    },
+    {
+      "id": "onevpl-examples",
+      "parent_recipe": "onevpl",
+      "source_recipe": "scripts.d-50-onevpl.sh",
+      "source_path": "examples",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets INSTALL_EXAMPLE_CODE=OFF and the generated configuration leaves BUILD_EXAMPLES disabled."
+    },
+    {
+      "id": "onevpl-googletest",
+      "parent_recipe": "onevpl",
+      "source_recipe": "scripts.d-50-onevpl.sh",
+      "source_path": "libvpl/test/ext/googletest",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets BUILD_TESTS=OFF."
+    },
+    {
+      "id": "aom-fastfeat",
+      "parent_recipe": "aom",
+      "source_recipe": "scripts.d-50-aom.sh",
+      "source_path": "third_party/fastfeat",
+      "classification": "linked",
+      "license_sources": ["third_party/fastfeat/LICENSE"],
+      "evidence": "AOM appends the fastfeat C sources unconditionally to AOM_AV1_ENCODER_SOURCES, which are included in the static aom library."
+    },
+    {
+      "id": "aom-vector",
+      "parent_recipe": "aom",
+      "source_recipe": "scripts.d-50-aom.sh",
+      "source_path": "third_party/vector",
+      "classification": "linked",
+      "license_sources": ["third_party/vector/LICENSE"],
+      "evidence": "AOM appends the vector C sources unconditionally to AOM_AV1_ENCODER_SOURCES, which are included in the static aom library."
+    },
+    {
+      "id": "aom-x86inc",
+      "parent_recipe": "aom",
+      "source_recipe": "scripts.d-50-aom.sh",
+      "source_path": "third_party/x86inc",
+      "classification": "linked",
+      "license_sources": ["third_party/x86inc/LICENSE"],
+      "evidence": "AOM x86 assembly sources included in the win64 static library include third_party/x86inc/x86inc.asm."
+    },
+    {
+      "id": "aom-googletest",
+      "parent_recipe": "aom",
+      "source_recipe": "scripts.d-50-aom.sh",
+      "source_path": "third_party/googletest",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets ENABLE_TESTS=NO, so the vendored GoogleTest target is not built or linked."
+    },
+    {
+      "id": "aom-highway",
+      "parent_recipe": "aom",
+      "source_recipe": "scripts.d-50-aom.sh",
+      "source_path": "third_party/highway",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "CONFIG_HIGHWAY defaults to disabled and the fixed BtbN AOM recipe does not enable it."
+    },
+    {
+      "id": "aom-libwebm",
+      "parent_recipe": "aom",
+      "source_recipe": "scripts.d-50-aom.sh",
+      "source_path": "third_party/libwebm",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "AOM only creates and attaches the vendored WebM object target when examples, tests, or tools are enabled; BtbN disables all three."
+    },
+    {
+      "id": "aom-libyuv",
+      "parent_recipe": "aom",
+      "source_recipe": "scripts.d-50-aom.sh",
+      "source_path": "third_party/libyuv",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Although CONFIG_LIBYUV creates an object target, AOM only attaches those objects to app targets; BtbN disables examples, tests, and tools, and the objects are not part of the installed static aom library."
+    },
+    {
+      "id": "libvpx-x86inc",
+      "parent_recipe": "libvpx",
+      "source_recipe": "scripts.d-50-libvpx.sh",
+      "source_path": "third_party/x86inc",
+      "classification": "linked",
+      "license_sources": ["third_party/x86inc/LICENSE"],
+      "evidence": "The fixed x86_64-win64-gcc build compiles codec assembly sources that include third_party/x86inc/x86inc.asm."
+    },
+    {
+      "id": "libvpx-googletest",
+      "parent_recipe": "libvpx",
+      "source_recipe": "scripts.d-50-libvpx.sh",
+      "source_path": "third_party/googletest",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN passes --disable-unit-tests."
+    },
+    {
+      "id": "libvpx-libwebm",
+      "parent_recipe": "libvpx",
+      "source_recipe": "scripts.d-50-libvpx.sh",
+      "source_path": "third_party/libwebm",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Vendored libwebm is used by libvpx examples, tools, and tests; BtbN disables examples, tools, and unit tests."
+    },
+    {
+      "id": "libvpx-libyuv",
+      "parent_recipe": "libvpx",
+      "source_recipe": "scripts.d-50-libvpx.sh",
+      "source_path": "third_party/libyuv",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Vendored libyuv is used by libvpx examples and command-line tools; BtbN disables both."
+    },
+    {
+      "id": "libvpx-nalloc",
+      "parent_recipe": "libvpx",
+      "source_recipe": "scripts.d-50-libvpx.sh",
+      "source_path": "third_party/nalloc",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Vendored nalloc is only included by the encoder and decoder fuzz examples; BtbN disables examples."
+    },
+    {
+      "id": "lcevcdec-vma",
+      "parent_recipe": "lcevcdec",
+      "source_recipe": "scripts.d-50-lcevcdec.sh",
+      "source_path": "src/pipeline_vulkan/src/vma",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets VN_SDK_PIPELINE_VULKAN=OFF, so the Vulkan Memory Allocator header is not built or linked."
+    },
+    {
+      "id": "opencore-amr-android-source",
+      "parent_recipe": "opencore-amr",
+      "source_recipe": "scripts.d-50-opencore-amr.sh",
+      "source_path": "opencore",
+      "classification": "linked",
+      "license_sources": [
+        "opencore/NOTICE",
+        "opencore/codecs_v2/audio/gsm_amr/patent_disclaimer.txt"
+      ],
+      "evidence": "The AMR-NB and AMR-WB Makefiles compile codec sources from the vendored opencore tree into both installed static libraries."
+    },
+    {
+      "id": "openjpeg-opjviewer",
+      "parent_recipe": "openjpeg",
+      "source_recipe": "scripts.d-50-openjpeg.sh",
+      "source_path": "src/bin/wx/OPJViewer",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BUILD_VIEWER defaults off and BtbN also disables the encompassing BUILD_CODEC application targets."
+    },
+    {
+      "id": "openjpeg-astyle",
+      "parent_recipe": "openjpeg",
+      "source_recipe": "scripts.d-50-openjpeg.sh",
+      "source_path": "thirdparty/astyle",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets WITH_ASTYLE=OFF."
+    },
+    {
+      "id": "openjpeg-liblcms2",
+      "parent_recipe": "openjpeg",
+      "source_recipe": "scripts.d-50-openjpeg.sh",
+      "source_path": "thirdparty/liblcms2",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The vendored LCMS2 target is under BUILD_CODEC and BUILD_THIRDPARTY; BtbN sets BUILD_CODEC=OFF."
+    },
+    {
+      "id": "openjpeg-libpng",
+      "parent_recipe": "openjpeg",
+      "source_recipe": "scripts.d-50-openjpeg.sh",
+      "source_path": "thirdparty/libpng",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The vendored libpng target is under BUILD_CODEC and BUILD_THIRDPARTY; BtbN sets BUILD_CODEC=OFF."
+    },
+    {
+      "id": "openjpeg-libtiff",
+      "parent_recipe": "openjpeg",
+      "source_recipe": "scripts.d-50-openjpeg.sh",
+      "source_path": "thirdparty/libtiff",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The vendored libtiff target is under BUILD_CODEC and BUILD_THIRDPARTY; BtbN sets BUILD_CODEC=OFF."
+    },
+    {
+      "id": "openjpeg-libz",
+      "parent_recipe": "openjpeg",
+      "source_recipe": "scripts.d-50-openjpeg.sh",
+      "source_path": "thirdparty/libz",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The vendored zlib target is under BUILD_CODEC and BUILD_THIRDPARTY; BtbN sets BUILD_CODEC=OFF."
+    },
+    {
+      "id": "openjpeg-googletest",
+      "parent_recipe": "openjpeg",
+      "source_recipe": "scripts.d-50-openjpeg.sh",
+      "source_path": "thirdparty/googletest",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets BUILD_TESTING=OFF and OpenJPEG unit tests default off."
+    },
+    {
+      "id": "soxr-pffft",
+      "parent_recipe": "soxr",
+      "source_recipe": "scripts.d-50-soxr.sh",
+      "source_path": "src/pffft.c",
+      "classification": "linked",
+      "license_sources": ["src/pffft.c"],
+      "evidence": "WITH_PFFFT and WITH_CR32S default on; src/CMakeLists.txt selects pffft32s for the installed SoXR library. The complete PFFFT/FFTPACK notice is embedded at the top of pffft.c."
+    },
+    {
+      "id": "soxr-lsr-tests",
+      "parent_recipe": "soxr",
+      "source_recipe": "scripts.d-50-soxr.sh",
+      "source_path": "lsr-tests",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN cross-compiles and sets BUILD_TESTS=OFF; BUILD_LSR_TESTS therefore remains disabled."
+    },
+    {
+      "id": "zimg-musl-libm",
+      "parent_recipe": "zimg",
+      "source_recipe": "scripts.d-50-zimg.sh",
+      "source_path": "test/extra/musl-libm",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The musl-libm sources are only compiled into check_LTLIBRARIES when --enable-unit-test is selected; the option defaults off."
+    },
+    {
+      "id": "serd-w3c-test-suites",
+      "parent_recipe": "serd",
+      "source_recipe": "scripts.d-50-lilv-96-serd.sh",
+      "source_path": "test/w3c/trig and test/w3c/turtle",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The fixed Serd recipe sets tests=disabled, so the W3C conformance datasets are not built or installed."
+    },
+    {
+      "id": "libpng-gregbook",
+      "parent_recipe": "libpng",
+      "source_recipe": "scripts.d-50-aribb24-25-libpng.sh",
+      "source_path": "contrib/gregbook",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The gregbook examples use standalone contrib Makefiles and are not sources of the default installed libpng library."
+    },
+    {
+      "id": "libpng-pngminus",
+      "parent_recipe": "libpng",
+      "source_recipe": "scripts.d-50-aribb24-25-libpng.sh",
+      "source_path": "contrib/pngminus",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "pngminus is a standalone contrib example and is not a source of the default installed libpng library."
+    },
+    {
+      "id": "libbluray-asm-java",
+      "parent_recipe": "libbluray",
+      "source_recipe": "scripts.d-50-libbluray.sh",
+      "source_path": "contrib/asm",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Vendored ObjectWeb ASM is only compiled into the BD-J Java archive; BtbN sets bdj_jar=disabled."
+    },
+    {
+      "id": "libjxl-hevcsoftware-benchmark-data",
+      "parent_recipe": "libjxl",
+      "source_recipe": "scripts.d-50-libjxl-50-libjxl.sh",
+      "source_path": "third_party/HEVCSoftware",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The HEVC reference configuration is used only by tools/benchmark/hm; BtbN sets JPEGXL_ENABLE_TOOLS=OFF and JPEGXL_ENABLE_BENCHMARK=OFF."
+    },
+    {
+      "id": "libjxl-dirent-benchmark-helper",
+      "parent_recipe": "libjxl",
+      "source_recipe": "scripts.d-50-libjxl-50-libjxl.sh",
+      "source_path": "third_party/dirent.cc and third_party/dirent.h",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The bundled Windows dirent implementation is compiled only by disabled benchmark or development-tool targets; BtbN sets JPEGXL_ENABLE_TOOLS=OFF, JPEGXL_ENABLE_BENCHMARK=OFF, and JPEGXL_ENABLE_DEVTOOLS=OFF."
+    },
+    {
+      "id": "harfbuzz-ms-use-generated-data",
+      "parent_recipe": "harfbuzz",
+      "source_recipe": "scripts.d-45-fonts-45-harfbuzz.sh",
+      "source_path": "src/ms-use",
+      "classification": "linked",
+      "license_sources": ["src/ms-use/COPYING"],
+      "evidence": "The default HarfBuzz source list compiles the USE shaper table and vowel-constraint implementation generated from the Microsoft data files in src/ms-use."
+    },
+    {
+      "id": "harfbuzz-fasthash",
+      "parent_recipe": "harfbuzz",
+      "source_recipe": "scripts.d-45-fonts-45-harfbuzz.sh",
+      "source_path": "src/hb-algs.hh",
+      "classification": "linked",
+      "license_sources": ["src/hb-algs.hh"],
+      "evidence": "hb-algs.hh is part of the default installed HarfBuzz library and embeds Zilong Tan's fasthash implementation with its complete MIT notice."
+    },
+    {
+      "id": "librist-cjson",
+      "parent_recipe": "librist",
+      "source_recipe": "scripts.d-50-librist-50-librist.sh",
+      "source_path": "contrib/contrib_cJSON",
+      "classification": "linked",
+      "license_sources": ["contrib/contrib_cJSON/cjson/cJSON.c"],
+      "evidence": "No separate cJSON recipe is present in the fixed BtbN graph, so librist's fallback_builtin path compiles the bundled cJSON source into librist. Its complete MIT notice is embedded in cJSON.c."
+    },
+    {
+      "id": "librist-lz4",
+      "parent_recipe": "librist",
+      "source_recipe": "scripts.d-50-librist-50-librist.sh",
+      "source_path": "contrib/lz4",
+      "classification": "linked",
+      "license_sources": ["contrib/lz4/lz4.c"],
+      "evidence": "No separate LZ4 recipe is present in the fixed BtbN graph, so librist's fallback_builtin path compiles bundled lz4.c into librist. Its complete BSD notice is embedded in lz4.c."
+    },
+    {
+      "id": "librist-windows-poll",
+      "parent_recipe": "librist",
+      "source_recipe": "scripts.d-50-librist-50-librist.sh",
+      "source_path": "contrib/poll_win.c",
+      "classification": "linked",
+      "license_sources": ["contrib/poll_win.c"],
+      "evidence": "On Windows src/libevsocket.c directly includes the bundled poll emulation; the source file preserves its public-domain statement and librist adaptation notice."
+    },
+    {
+      "id": "librist-mingw-time-shim",
+      "parent_recipe": "librist",
+      "source_recipe": "scripts.d-50-librist-50-librist.sh",
+      "source_path": "contrib/time-shim.c",
+      "classification": "linked",
+      "license_sources": ["contrib/time-shim.c"],
+      "evidence": "contrib/time-shim.c is unconditionally listed in the librist target and retains the public-domain statements for its mingw-w64-derived portions."
+    },
+    {
+      "id": "librist-builtin-mbedtls",
+      "parent_recipe": "librist",
+      "source_recipe": "scripts.d-50-librist-50-librist.sh",
+      "source_path": "contrib/mbedtls",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN builds and installs its fixed mbedTLS recipe first and configures librist with use_mbedtls=true and builtin_mbedtls=false, so the external mbedcrypto library is selected."
+    },
+    {
+      "id": "librist-fallback-crypto",
+      "parent_recipe": "librist",
+      "source_recipe": "scripts.d-50-librist-50-librist.sh",
+      "source_path": "contrib/aes.c, contrib/sha256.c, and contrib/fastpbkdf2.c",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "These fallback sources are added only when neither mbedcrypto nor GnuTLS is found; the fixed BtbN graph supplies mbedcrypto."
+    },
+    {
+      "id": "librist-getopt-tools",
+      "parent_recipe": "librist",
+      "source_recipe": "scripts.d-50-librist-50-librist.sh",
+      "source_path": "contrib/getopt-shim.c",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The getopt shim is used by command-line tools, and BtbN sets built_tools=false."
+    },
+    {
+      "id": "librist-linux-crypto",
+      "parent_recipe": "librist",
+      "source_recipe": "scripts.d-50-librist-50-librist.sh",
+      "source_path": "contrib/linux-crypto.c",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The release target is win64; linux-crypto.c is selected only for Linux or Android hosts with linux/if_alg.h."
+    },
+    {
+      "id": "libass-wyhash",
+      "parent_recipe": "libass",
+      "source_recipe": "scripts.d-50-libass.sh",
+      "source_path": "libass/wyhash.h",
+      "classification": "linked",
+      "license_sources": ["libass/wyhash.h"],
+      "evidence": "The default libass cache implementation includes wyhash.h; the header contains the complete Unlicense text."
+    },
+    {
+      "id": "libass-mingw-dwrite-definitions",
+      "parent_recipe": "libass",
+      "source_recipe": "scripts.d-50-libass.sh",
+      "source_path": "libass/dwrite_c.h",
+      "classification": "linked",
+      "license_sources": ["libass/dwrite_c.h"],
+      "evidence": "BtbN enables DirectWrite for win64, so ass_directwrite.c includes the stripped mingw-w64 public-domain DirectWrite definitions."
+    },
+    {
+      "id": "libass-checkasm",
+      "parent_recipe": "libass",
+      "source_recipe": "scripts.d-50-libass.sh",
+      "source_path": "checkasm",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN sets checkasm=disabled, so the separately licensed checkasm harness is not compiled."
+    },
+    {
+      "id": "libwebp-fuzzer-nalloc",
+      "parent_recipe": "libwebp",
+      "source_recipe": "scripts.d-50-libwebp.sh",
+      "source_path": "tests/fuzzer/nalloc.h",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "nalloc is only used by libwebp fuzz tests; the fixed recipe performs the normal static-library build and does not build or install fuzz targets."
+    },
+    {
+      "id": "vmaf-libsvm",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/src/svm.cpp and libvmaf/src/svm.h",
+      "classification": "linked",
+      "license_sources": ["libvmaf/src/svm.h"],
+      "evidence": "The default libvmaf source list compiles svm.cpp; svm.h contains the complete libsvm BSD-3-Clause notice."
+    },
+    {
+      "id": "vmaf-dav1d-x86-cpu",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/src/x86/cpu.c",
+      "classification": "linked",
+      "license_sources": ["libvmaf/src/x86/cpu.c"],
+      "evidence": "The win64 source list compiles the dav1d-derived x86 CPU detection implementation."
+    },
+    {
+      "id": "vmaf-av-metrics-ciede",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/src/feature/ciede.c",
+      "classification": "linked",
+      "license_sources": ["libvmaf/src/feature/ciede.c"],
+      "evidence": "The default feature source list compiles ciede.c, which retains the MIT notice for the av-metrics implementation it ports."
+    },
+    {
+      "id": "vmaf-mkdirp",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/src/feature/mkdirp.c",
+      "classification": "linked",
+      "license_sources": ["libvmaf/src/feature/mkdirp.c"],
+      "project_license_sources": ["packaging/ffmpeg-vendored-license-overrides/vmaf-mkdirp/Readme.md"],
+      "source_repository": "https://github.com/stephenmathieson/mkdirp.c.git",
+      "source_revision": "4587acadbc304080b247aa4b2fc0b3d6ba1fe979",
+      "evidence": "The default feature source list compiles mkdirp.c. VMAF retains its copyright and MIT identifier but not the full terms, so the fixed upstream README license is staged alongside it."
+    },
+    {
+      "id": "vmaf-iqa",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/src/feature/iqa",
+      "classification": "linked",
+      "license_sources": ["libvmaf/src/feature/iqa/convolve.c"],
+      "evidence": "The default feature source list compiles the bundled IQA convolve, decimate, math, and SSIM implementations; convolve.c retains their common BSD-3-Clause notice."
+    },
+    {
+      "id": "vmaf-xiph-psnr-hvs",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/src/feature/third_party/xiph/psnr_hvs.c",
+      "classification": "linked",
+      "license_sources": ["libvmaf/src/feature/third_party/xiph/psnr_hvs.c"],
+      "evidence": "The default feature source list compiles the bundled Xiph PSNR-HVS implementation."
+    },
+    {
+      "id": "vmaf-compat-stdatomic",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/src/compat/gcc and libvmaf/src/compat/msvc",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The BtbN win64 MinGW toolchain provides C11 stdatomic.h, so Meson does not add either compatibility include directory."
+    },
+    {
+      "id": "vmaf-daala-vidinput-tools",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/tools/vidinput.c and libvmaf/tools/vidinput.h",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The fixed recipe empties libvmaf/tools/meson.build before configuration, so the Daala-derived input helper is not compiled."
+    },
+    {
+      "id": "vmaf-xiph-integer-ssim",
+      "parent_recipe": "vmaf",
+      "source_recipe": "scripts.d-45-vmaf.sh",
+      "source_path": "libvmaf/src/feature/integer_ssim.c",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "integer_ssim.c is retained in the repository but is absent from the fixed libvmaf Meson library source list."
+    },
+    {
+      "id": "freetype-ftl",
+      "parent_recipe": "freetype",
+      "source_recipe": "scripts.d-45-fonts-50-freetype.sh",
+      "source_path": "docs/FTL.TXT",
+      "classification": "linked",
+      "license_sources": ["docs/FTL.TXT"],
+      "evidence": "The recipe-level root LICENSE.TXT requires choosing either the FreeType License in docs/FTL.TXT or GPLv2. The portable LGPL distribution chooses and stages the FTL."
+    },
+    {
+      "id": "freetype-bdf-and-fthash",
+      "parent_recipe": "freetype",
+      "source_recipe": "scripts.d-45-fonts-50-freetype.sh",
+      "source_path": "src/bdf and src/base/fthash.c",
+      "classification": "linked",
+      "license_sources": ["src/bdf/README"],
+      "evidence": "The BDF driver is enabled in modules.cfg and fthash.c is part of ftbase.c; root LICENSE.TXT identifies their separate X-style license in src/bdf/README."
+    },
+    {
+      "id": "freetype-pcf",
+      "parent_recipe": "freetype",
+      "source_recipe": "scripts.d-45-fonts-50-freetype.sh",
+      "source_path": "src/pcf",
+      "classification": "linked",
+      "license_sources": ["src/pcf/README"],
+      "evidence": "The PCF driver is enabled in modules.cfg and root LICENSE.TXT identifies its separate X-style license in src/pcf/README."
+    },
+    {
+      "id": "freetype-harfbuzz-autofit",
+      "parent_recipe": "freetype",
+      "source_recipe": "scripts.d-45-fonts-50-freetype.sh",
+      "source_path": "src/autofit/ft-hb-ft.c and related headers",
+      "classification": "linked",
+      "license_sources": ["src/autofit/ft-hb-ft.c"],
+      "evidence": "The final Freetype rebuild occurs after HarfBuzz and does not pass --without-harfbuzz, enabling the autofit integration that contains Old-MIT HarfBuzz code."
+    },
+    {
+      "id": "freetype-bundled-zlib",
+      "parent_recipe": "freetype",
+      "source_recipe": "scripts.d-45-fonts-50-freetype.sh",
+      "source_path": "src/gzip bundled zlib sources",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The fixed BtbN graph installs zlib before both Freetype passes; configure therefore defines FT_CONFIG_OPTION_SYSTEM_ZLIB and ftgzip.c uses the external zlib headers and library."
+    },
+    {
+      "id": "freetype-md5-debug",
+      "parent_recipe": "freetype",
+      "source_recipe": "scripts.d-45-fonts-50-freetype.sh",
+      "source_path": "src/base/md5.c and src/base/md5.h",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Freetype's root LICENSE.TXT states that MD5 checksum support is used only for debugging in development builds; the BtbN recipe builds the release library."
+    },
+    {
+      "id": "freetype-development-tools",
+      "parent_recipe": "freetype",
+      "source_recipe": "scripts.d-45-fonts-50-freetype.sh",
+      "source_path": "src/tools",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The Autotools install target builds the library and enabled modules, not the standalone development helpers retained under src/tools."
+    },
+    {
+      "id": "libtheora-example-getopt",
+      "parent_recipe": "libtheora",
+      "source_recipe": "scripts.d-50-libtheora.sh",
+      "source_path": "examples/getopt* and win32 getopt/experimental helpers",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The separately licensed GNU and BSD getopt copies are used by example or legacy Visual Studio programs. BtbN disables examples and uses the Autotools static library target, so these helpers are not linked into libtheora."
+    },
+    {
+      "id": "xz-cryptopp-derived-sha256",
+      "parent_recipe": "xz",
+      "source_recipe": "scripts.d-25-xz.sh",
+      "source_path": "src/liblzma/check/sha256.c",
+      "classification": "linked",
+      "license_sources": ["COPYING.0BSD"],
+      "evidence": "The internal SHA-256 implementation is based on public-domain Crypto++ code, carries SPDX 0BSD after XZ modifications, and is selected for the win64 build because no supported external SHA-256 provider is configured."
+    },
+    {
+      "id": "xz-command-getopt",
+      "parent_recipe": "xz",
+      "source_recipe": "scripts.d-25-xz.sh",
+      "source_path": "lib/getopt*",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "XZ's root licensing file identifies this LGPL getopt implementation as a fallback for command-line tools. The portable distribution consumes only the static liblzma library through FFmpeg and does not include XZ command-line programs."
+    },
+    {
+      "id": "xz-scripts-and-extra",
+      "parent_recipe": "xz",
+      "source_recipe": "scripts.d-25-xz.sh",
+      "source_path": "src/scripts and extra",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "XZ's root licensing file states that the GPL compression helper scripts are separate command tools and that extra is not built or installed as part of XZ Utils; neither contributes to the distributed FFmpeg binary."
+    },
+    {
+      "id": "fribidi-unicode-ucd",
+      "parent_recipe": "fribidi",
+      "source_recipe": "scripts.d-25-fribidi.sh",
+      "source_path": "gen.tab/unidata",
+      "classification": "linked",
+      "license_sources": ["gen.tab/unidata/ReadMe.txt"],
+      "project_license_sources": ["packaging/ffmpeg-vendored-license-overrides/unicode/UNICODE-LICENSE.txt"],
+      "source_repository": "https://www.unicode.org/Public/16.0.0/ucd/",
+      "evidence": "Meson runs native generators over the bundled Unicode 16.0.0 data and compiles the resulting bidi, joining, shaping, mirroring, and bracket tables into FriBidi. The bundled README points to Unicode's terms; the complete current Unicode License V3 text is staged with it."
+    },
+    {
+      "id": "gmp-mini-gmp",
+      "parent_recipe": "gmp",
+      "source_recipe": "scripts.d-25-gmp.sh",
+      "source_path": "mini-gmp",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The full GMP Autotools build lists mini-gmp only in EXTRA_DIST and exposes it through a separate check-mini-gmp target. BtbN builds and installs the normal static GMP library, so the fallback implementation is not linked."
+    },
+    {
+      "id": "libudfread-examples",
+      "parent_recipe": "libudfread",
+      "source_recipe": "scripts.d-45-libudfread.sh",
+      "source_path": "examples",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The example udfcat and udfls programs are conditional on enable_examples; BtbN explicitly sets enable_examples=false and installs only the static library."
+    },
+    {
+      "id": "libunibreak-unicode-generated-data",
+      "parent_recipe": "libunibreak",
+      "source_recipe": "scripts.d-45-libunibreak.sh",
+      "source_path": "src/*data.c",
+      "classification": "linked",
+      "license_sources": [],
+      "project_license_sources": ["packaging/ffmpeg-vendored-license-overrides/unicode/UNICODE-LICENSE.txt"],
+      "source_repository": "https://www.unicode.org/",
+      "evidence": "The static library source list compiles committed tables generated from Unicode line-break, word-break, grapheme-break, East Asian width, Indic conjunct, and emoji data. The complete current Unicode License V3 text is staged for those derived tables."
+    },
+    {
+      "id": "libunibreak-tools-and-test-data",
+      "parent_recipe": "libunibreak",
+      "source_recipe": "scripts.d-45-libunibreak.sh",
+      "source_path": "tools and src/*Test.txt",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Tools are EXTRA_DIST-only and Unicode conformance data is used by the check target. The fixed recipe runs the default build and install targets, not make check or the data-regeneration targets."
+    },
+    {
+      "id": "snappy-googletest-and-benchmark",
+      "parent_recipe": "snappy",
+      "source_recipe": "scripts.d-50-snappy.sh",
+      "source_path": "third_party/googletest and third_party/benchmark",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The repositories are declared as Snappy submodules, but BtbN sets both SNAPPY_BUILD_TESTS=OFF and SNAPPY_BUILD_BENCHMARKS=OFF. Their CMake add_subdirectory calls are therefore not reached and neither framework is linked."
+    },
+    {
+      "id": "snappy-testdata",
+      "parent_recipe": "snappy",
+      "source_recipe": "scripts.d-50-snappy.sh",
+      "source_path": "testdata",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "COPYING.notestdata documents the separate test corpus, while BtbN disables tests, benchmarks, and fuzzing. No testdata file contributes to the installed static library."
+    },
+    {
+      "id": "twolame-lame-toolame-attribution",
+      "parent_recipe": "twolame",
+      "source_recipe": "scripts.d-50-twolame.sh",
+      "source_path": "libtwolame LAME and tooLAME-derived routines",
+      "classification": "linked",
+      "license_sources": ["AUTHORS"],
+      "evidence": "The installed libtwolame source list compiles ath.c, psycho_4.c, and other routines identified as derived from LAME and tooLAME. Their files use the project LGPL terms; AUTHORS preserves the retained contributor and derivation attribution."
+    },
+    {
+      "id": "uavs3d-decoder-app",
+      "parent_recipe": "uavs3d",
+      "source_recipe": "scripts.d-50-uavs3d.sh",
+      "source_path": "test and uavs3dec",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The top-level CMake build creates the uavs3dec test application, but the install rules under source install only libuavs3d, its public header, and pkg-config metadata. The portable distribution consumes only that static library through FFmpeg."
+    },
+    {
+      "id": "openh264-googletest",
+      "parent_recipe": "openh264",
+      "source_recipe": "scripts.d-50-openh264.sh",
+      "source_path": "gtest and test",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "GoogleTest is fetched only by the explicit gtest-bootstrap target and is used by codec_unittest. BtbN invokes install-static directly, which depends on the codec static library and headers rather than the test targets."
+    },
+    {
+      "id": "openh264-console-and-gmp-module",
+      "parent_recipe": "openh264",
+      "source_recipe": "scripts.d-50-openh264.sh",
+      "source_path": "codec/console and module",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The install-static target does not depend on the encoder/decoder console binaries, and the GMP API module is built only when a separate gmp-api checkout exists. Neither path contributes to the installed OpenH264 static library used by FFmpeg."
+    },
+    {
+      "id": "openapv-app-tests-and-util",
+      "parent_recipe": "openapv",
+      "source_recipe": "scripts.d-50-openapv.sh",
+      "source_path": "app, test, and util",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN empties app/CMakeLists.txt before configuration and sets ENABLE_TESTS=OFF. The utility hex-pattern file is not part of the src static-library source list, so only project-licensed library sources are retained."
+    },
+    {
+      "id": "opencl-icd-loader-build-and-test-helpers",
+      "parent_recipe": "opencl",
+      "source_recipe": "scripts.d-45-opencl.sh-source2",
+      "source_path": "cmake/JoinPaths.cmake and test",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "JoinPaths.cmake is a configure-time helper under MIT OR CC0, while BtbN disables both OPENCL_ICD_LOADER_BUILD_TESTING and BUILD_TESTING. Neither helper nor test source is linked into the installed static OpenCL loader."
+    },
+    {
+      "id": "vulkan-headers-mit-selection",
+      "parent_recipe": "vulkan-headers",
+      "source_recipe": "scripts.d-47-vulkan-40-vulkan-headers.sh",
+      "source_path": "include and registry Apache-2.0 OR MIT files",
+      "classification": "linked",
+      "license_sources": ["LICENSES/MIT.txt"],
+      "evidence": "The fixed recipe installs Vulkan C/C++ and video headers plus registry data. Their identifiers permit Apache-2.0 OR MIT; this LGPL portable distribution selects and stages the complete MIT terms alongside the root license summary."
+    },
+    {
+      "id": "vulkan-headers-generator-scripts",
+      "parent_recipe": "vulkan-headers",
+      "source_recipe": "scripts.d-47-vulkan-40-vulkan-headers.sh",
+      "source_path": "registry Python generators including parse_dependency.py",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN installs the already generated headers with module and tests disabled. Registry scripts may be copied into the intermediate SDK, but they are neither executed to build the fixed headers nor included in the portable FFmpeg binary."
+    },
+    {
+      "id": "spirv-headers-tools-and-docs",
+      "parent_recipe": "spirv-headers",
+      "source_recipe": "scripts.d-47-vulkan-60-spirv-headers.sh",
+      "source_path": "tools/buildHeaders, tests, and Markdown documentation",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "SPIRV_HEADERS_ENABLE_TESTS=OFF and the install target copies pre-generated include data. The JsonCpp header generator and CC-BY documentation described by the root LICENSE do not contribute to the distributed binary."
+    },
+    {
+      "id": "libva-microsoft-win32",
+      "parent_recipe": "libva",
+      "source_recipe": "scripts.d-50-vaapi-50-libva.sh",
+      "source_path": "va/win32/va_win32.c and va_win32.h",
+      "classification": "linked",
+      "license_sources": ["va/win32/va_win32.c"],
+      "evidence": "The fixed win64 Meson configuration enables with_win32 and BtbN converts libva targets to static libraries. The Windows display implementation is compiled for the VAAPI path and retains Microsoft and Emil Velikov MIT notices distinct from the root Intel notice."
+    },
+    {
+      "id": "brotli-non-c-and-test-trees",
+      "parent_recipe": "brotli",
+      "source_recipe": "scripts.d-50-libjxl-45-brotli.sh",
+      "source_path": "csharp, go, java, js, python, research, and tests",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The CMake install used by BtbN builds the C common, decoder, and encoder libraries. Language bindings, research utilities, downloaded test corpora, and compatibility tests are not linked into the installed static Brotli libraries."
+    },
+    {
+      "id": "lcms2-gpl-plugins-and-utilities",
+      "parent_recipe": "lcms2",
+      "source_recipe": "scripts.d-50-libjxl-45-lcms2.sh",
+      "source_path": "plugins/fast_float, plugins/threaded, utils, and testbeds",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN builds the GPLv3 fast-float and threaded plugins as separate static archives, while utils are disabled. FFmpeg and JPEG XL resolve the main lcms2 dependency only; the plugin archives and testbeds are not linked into ffmpeg.exe or copied into the portable distribution."
+    },
+    {
+      "id": "srt-udt-bsd-core",
+      "parent_recipe": "srt",
+      "source_recipe": "scripts.d-50-srt.sh",
+      "source_path": "srtcore UDT-derived buffer, channel, and transport code",
+      "classification": "linked",
+      "license_sources": ["srtcore/buffer_tools.h"],
+      "evidence": "The fixed SRT static-library file list compiles UDT-derived core sources. buffer_tools.h retains the complete University of Illinois BSD notice shared by those files."
+    },
+    {
+      "id": "srt-public-domain-atomic",
+      "parent_recipe": "srt",
+      "source_recipe": "scripts.d-50-srt.sh",
+      "source_path": "srtcore/atomic.h",
+      "classification": "linked",
+      "license_sources": ["srtcore/atomic.h"],
+      "evidence": "SRT synchronization headers include the adopted mbitsnbites/atomic implementation. The complete public-domain dedication and fallback permission text are retained in atomic.h."
+    },
+    {
+      "id": "srt-aladdin-md5",
+      "parent_recipe": "srt",
+      "source_recipe": "scripts.d-50-srt.sh",
+      "source_path": "srtcore/md5.cpp and md5.h",
+      "classification": "linked",
+      "license_sources": ["srtcore/md5.cpp"],
+      "evidence": "md5.cpp appears directly in srtcore/filelist.maf and is compiled into the static library. Its L. Peter Deutsch/Aladdin permissive notice differs from SRT's root MPL terms."
+    },
+    {
+      "id": "srt-public-domain-endian-utilities",
+      "parent_recipe": "srt",
+      "source_recipe": "scripts.d-50-srt.sh",
+      "source_path": "srtcore/utilities.h endian helpers",
+      "classification": "linked",
+      "license_sources": ["srtcore/utilities.h"],
+      "evidence": "Core SRT compilation includes utilities.h throughout; its endian implementation identifies a separately adopted public-domain source and retains that provenance in the staged header."
+    },
+    {
+      "id": "fontconfig-public-domain-md5",
+      "parent_recipe": "fontconfig",
+      "source_recipe": "scripts.d-45-fonts-35-fontconfig.sh",
+      "source_path": "src/fcmd5.h",
+      "classification": "linked",
+      "license_sources": ["src/fcmd5.h"],
+      "evidence": "The fixed Meson source list compiles fccache.c, which includes Colin Plumb's public-domain MD5 implementation from fcmd5.h. The header retains the dedication and provenance notice."
+    },
+    {
+      "id": "fontconfig-public-domain-ftglue",
+      "parent_recipe": "fontconfig",
+      "source_recipe": "scripts.d-45-fonts-35-fontconfig.sh",
+      "source_path": "src/ftglue.c and src/ftglue.h",
+      "classification": "linked",
+      "license_sources": ["src/ftglue.h"],
+      "evidence": "Fontconfig's fixed Meson library source list compiles ftglue.c and fcfreetype.c uses its interface. ftglue.h retains the FreeType Project provenance and explicit public-domain dedication."
+    },
+    {
+      "id": "fontconfig-disabled-assets-and-tools",
+      "parent_recipe": "fontconfig",
+      "source_recipe": "scripts.d-45-fonts-35-fontconfig.sh",
+      "source_path": "conf.d, documentation, tools, tests, translations, and build generators",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN disables documentation, tools, cache construction, and tests, then removes the installed share, etc, and var trees. Build-time generators and configuration or translation data do not contribute code to the portable FFmpeg binary."
+    },
+    {
+      "id": "libaribcaption-openwall-md5",
+      "parent_recipe": "libaribcaption",
+      "source_recipe": "scripts.d-50-libaribcaption.sh",
+      "source_path": "src/base/md5.c and src/base/md5.h",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The recipe defines HAVE_OPENSSL=1 for C and C++ compilation. The vendored Openwall MD5 implementation is guarded by #ifndef HAVE_OPENSSL, so its implementation is removed by preprocessing and libaribcaption uses OpenSSL instead."
+    },
+    {
+      "id": "libaribcaption-android-tinyxml2",
+      "parent_recipe": "libaribcaption",
+      "source_recipe": "scripts.d-50-libaribcaption.sh",
+      "source_path": "src/base/tinyxml2.cpp and src/base/tinyxml2.h",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "CMake adds the bundled TinyXML2 sources only when ARIBCC_IS_ANDROID is true. The fixed win64 build does not compile them."
+    },
+    {
+      "id": "libaribcaption-tests-and-embedded-freetype",
+      "parent_recipe": "libaribcaption",
+      "source_recipe": "scripts.d-50-libaribcaption.sh",
+      "source_path": "test and optional embedded FreeType acquisition",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN disables ARIBCC_BUILD_TESTS and explicitly selects the already packaged external FreeType with ARIBCC_USE_EMBEDDED_FREETYPE=OFF. Neither path contributes to the installed static library."
+    },
+    {
+      "id": "zvbi-alevt-derived-decoder",
+      "parent_recipe": "zvbi",
+      "source_recipe": "scripts.d-50-zvbi.sh",
+      "source_path": "src/search.c, src/teletext_decoder.h, src/vbi.c, and related AleVT-derived decoder interfaces",
+      "classification": "linked",
+      "license_sources": ["src/search.c"],
+      "evidence": "The libzvbi static-library source list compiles the search and decoder paths identified as originally based on AleVT 1.5.1. search.c retains the contributor attribution and complete GNU Library General Public License notice."
+    },
+    {
+      "id": "zvbi-disabled-vtx-export",
+      "parent_recipe": "zvbi",
+      "source_recipe": "scripts.d-50-zvbi.sh",
+      "source_path": "src/exp-vtx.c",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "Although exp-vtx.c appears in the Automake source list, its GPL-2+-licensed AleVT and VideoteXt-derived implementation is intentionally enclosed in #if 0 and contributes no compiled code."
+    },
+    {
+      "id": "zvbi-chains-and-linux-capture-compatibility",
+      "parent_recipe": "zvbi",
+      "source_recipe": "scripts.d-50-zvbi.sh",
+      "source_path": "src/chains.c and Linux V4L compatibility headers",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "chains.c belongs to the separately installed libzvbi-chains helper rather than the zvbi-0.2 library linked by FFmpeg. The V4L compatibility implementation and videodev2k.h are inactive for the fixed Windows target, while DVB and proxy support are explicitly disabled."
+    },
+    {
+      "id": "mingw-std-threads-installed-headers",
+      "parent_recipe": "mingw-std-threads",
+      "source_recipe": "scripts.d-10-mingw-std-threads.sh",
+      "source_path": "mingw.*.h",
+      "classification": "linked",
+      "license_sources": ["LICENSE"],
+      "evidence": "The fixed recipe installs all project headers into the common compiler include prefix. C++ dependencies may compile these header-only thread primitives directly; the common BSD-2-Clause terms cover every installed header."
+    },
+    {
+      "id": "vulkan-shim-khronos-headers",
+      "parent_recipe": "vulkan-loader",
+      "source_recipe": "scripts.d-47-vulkan-45-vulkan-loader.sh-source2",
+      "source_path": "Vulkan-Headers registry and include data",
+      "classification": "linked",
+      "license_sources": ["LICENSES/MIT.txt"],
+      "evidence": "The shim generator reads the pinned Vulkan registry and the resulting loader compiles against the accompanying generated Vulkan headers. Those inputs permit Apache-2.0 OR MIT; the distribution selects and stages the complete MIT terms."
+    },
+    {
+      "id": "spirv-cross-khronos-mit-headers",
+      "parent_recipe": "spirv-cross",
+      "source_recipe": "scripts.d-47-vulkan-55-spirv-cross.sh",
+      "source_path": "GLSL.std.450.h, spirv.h, and spirv.hpp",
+      "classification": "linked",
+      "license_sources": ["LICENSES/MIT.txt"],
+      "evidence": "The static SPIRV-Cross core source list includes Khronos-generated SPIR-V and GLSL enumeration headers under MIT terms. The full MIT notice is staged in addition to the recipe-level Apache-2.0 license."
+    },
+    {
+      "id": "spirv-cross-cli-tests-and-reference-data",
+      "parent_recipe": "spirv-cross",
+      "source_recipe": "scripts.d-47-vulkan-55-spirv-cross.sh",
+      "source_path": "CLI, tests, samples, shaders, scripts, and reference data",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN disables the CLI, C++ backend, and tests while building the static C API and enabled backends. Sample programs, shader corpora, reference output, checkout scripts, and documentation do not contribute to the linked libraries."
+    },
+    {
+      "id": "libssh-openssh-derived-code",
+      "parent_recipe": "libssh",
+      "source_recipe": "scripts.d-50-libssh.sh",
+      "source_path": "src/agent.c, src/match.c, and OpenSSH-derived key handling",
+      "classification": "linked",
+      "license_sources": ["BSD", "src/match.c"],
+      "evidence": "The static libssh source list compiles agent.c and match.c, and identifies additional small key-handling portions as taken from OpenSSH. The project BSD notice and match.c preserve the applicable Markus Friedl and Tatu Ylonen terms and attribution."
+    },
+    {
+      "id": "libssh-openbsd-bcrypt-pbkdf",
+      "parent_recipe": "libssh",
+      "source_recipe": "scripts.d-50-libssh.sh",
+      "source_path": "src/external/bcrypt_pbkdf.c",
+      "classification": "linked",
+      "license_sources": ["src/external/bcrypt_pbkdf.c"],
+      "evidence": "bcrypt_pbkdf.c is always in the static-library source list and supplies the OpenBSD implementation when the platform lacks bcrypt_pbkdf. The source retains Ted Unangst's complete ISC-style notice."
+    },
+    {
+      "id": "libssh-openbsd-blowfish",
+      "parent_recipe": "libssh",
+      "source_recipe": "scripts.d-50-libssh.sh",
+      "source_path": "src/external/blowfish.c",
+      "classification": "linked",
+      "license_sources": ["src/external/blowfish.c"],
+      "evidence": "The fixed static-library source list includes the OpenBSD Blowfish implementation used by bcrypt PBKDF when the required platform routines are unavailable. Its full BSD-3-Clause notice is staged."
+    },
+    {
+      "id": "libssh-libcrux-mlkem",
+      "parent_recipe": "libssh",
+      "source_recipe": "scripts.d-50-libssh.sh",
+      "source_path": "src/external/libcrux_mlkem768_sha3.c",
+      "classification": "linked",
+      "license_sources": ["src/external/libcrux_mlkem768_sha3.c"],
+      "evidence": "When the pinned crypto provider lacks native ML-KEM-1024, libssh compiles its extracted libcrux ML-KEM fallback. The generated source retains the complete Cryspen MIT notice and its extraction revision."
+    },
+    {
+      "id": "libssh-public-domain-crypto-fallbacks",
+      "parent_recipe": "libssh",
+      "source_recipe": "scripts.d-50-libssh.sh",
+      "source_path": "src/external/sntrup761.c and conditional public-domain primitives",
+      "classification": "linked",
+      "license_sources": ["src/external/sntrup761.c"],
+      "evidence": "The OpenSSL static-library path always compiles the public-domain sntrup761 implementation. Its source retains contributor provenance; other public-domain curve, ChaCha, Poly1305, and Ed25519 fallbacks remain conditional on provider capabilities."
+    },
+    {
+      "id": "libssh-unused-tools-and-provider-fallbacks",
+      "parent_recipe": "libssh",
+      "source_recipe": "scripts.d-50-libssh.sh",
+      "source_path": "examples, tests, server, getopt, and unused crypto-provider fallbacks",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN disables examples and server support. The fixed MinGW/OpenSSL environment supplies getopt, Curve25519, and EVP ChaCha20, so their bundled replacements and the MbedTLS or libgcrypt implementations are not compiled into the installed static library."
+    },
+    {
+      "id": "rav1e-x264-x86inc",
+      "parent_recipe": "rav1e",
+      "source_recipe": "scripts.d-50-rav1e.sh",
+      "source_path": "src/ext/x86/x86inc.asm",
+      "classification": "linked",
+      "license_sources": ["src/ext/x86/x86inc.asm"],
+      "evidence": "The fixed win64 rav1e static library enables its x86 assembly path, which includes the x264 project's x86inc macro layer. The source retains the complete ISC-style notice and x264 contributor attribution."
+    },
+    {
+      "id": "rav1e-nonlibrary-assets",
+      "parent_recipe": "rav1e",
+      "source_recipe": "scripts.d-50-rav1e.sh",
+      "source_path": "src/bin, tests, fuzz, samples, documentation, and shader-independent analysis assets",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "cargo cinstall is invoked for a static library, while the command-line programs, decoder and muxer helpers, tests, fuzz targets, documentation, and analysis notebooks are not installed or linked into FFmpeg. Cargo package dependencies are covered by the separate locked Cargo audit."
+    },
+    {
+      "id": "libmp3lame-replaygain",
+      "parent_recipe": "libmp3lame",
+      "source_recipe": "scripts.d-50-libmp3lame.sh",
+      "source_path": "libmp3lame/gain_analysis.c and gain_analysis.h",
+      "classification": "linked",
+      "license_sources": ["libmp3lame/gain_analysis.c"],
+      "evidence": "The fixed r6531 libmp3lame source list compiles the ReplayGain analysis implementation by David Robinson and Glen Sawyer. The source retains its attribution and complete LGPL-2.1-or-later notice."
+    },
+    {
+      "id": "libmp3lame-ron-mayer-fft",
+      "parent_recipe": "libmp3lame",
+      "source_recipe": "scripts.d-50-libmp3lame.sh",
+      "source_path": "libmp3lame/fft.c",
+      "classification": "linked",
+      "license_sources": ["libmp3lame/fft.c"],
+      "evidence": "The r6531 static-library source list compiles fft.c, whose retained header identifies Ron Mayer's earlier FFT/FHT implementation and requests contributor credit in addition to LAME's project license."
+    },
+    {
+      "id": "libmp3lame-disabled-frontend-decoder-and-i386-asm",
+      "parent_recipe": "libmp3lame",
+      "source_recipe": "scripts.d-50-libmp3lame.sh",
+      "source_path": "frontend, mpglib decoder, and libmp3lame/i386 NASM routines",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "BtbN disables the frontend and decoder. Although NASM is requested, r6531 sets CPUTYPE=no for x86_64, so the GOGO-derived 32-bit assembly library is not built for the fixed win64 target; only the project vector source remains enabled."
+    },
+    {
+      "id": "mingw-winpthreads",
+      "parent_recipe": "mingw",
+      "source_recipe": "scripts.d-10-mingw.sh",
+      "source_path": "mingw-w64-libraries/winpthreads",
+      "classification": "linked",
+      "license_sources": ["mingw-w64-libraries/winpthreads/COPYING"],
+      "evidence": "BtbN builds and installs winpthreads as a static library, configures FFmpeg with pthreads, and statically resolves that runtime into the executable. COPYING includes both the mingw-w64 MIT terms and the retained Lockless BSD-3-Clause notice."
+    },
+    {
+      "id": "mingw-crt-public-domain-runtime",
+      "parent_recipe": "mingw",
+      "source_recipe": "scripts.d-10-mingw.sh",
+      "source_path": "mingw-w64-crt public-domain runtime implementations",
+      "classification": "linked",
+      "license_sources": ["DISCLAIMER.PD"],
+      "evidence": "The fixed toolchain installs the x86_64 UCRT-targeting mingw-w64 CRT and static runtime archives. Many startup, security, and compatibility objects use the repository's common public-domain dedication and warranty disclaimer."
+    },
+    {
+      "id": "mingw-crt-lucent-gdtoa",
+      "parent_recipe": "mingw",
+      "source_recipe": "scripts.d-10-mingw.sh",
+      "source_path": "mingw-w64-crt/gdtoa and related formatting routines",
+      "classification": "linked",
+      "license_sources": ["mingw-w64-crt/gdtoa/gdtoa.c"],
+      "evidence": "mingw-w64's CRT archives include Lucent gdtoa conversion routines used by its number-formatting compatibility layer. gdtoa.c retains the complete Lucent permissive notice applicable to that family."
+    },
+    {
+      "id": "mingw-crt-bsd-compatibility",
+      "parent_recipe": "mingw",
+      "source_recipe": "scripts.d-10-mingw.sh",
+      "source_path": "mingw-w64-crt BSD-derived getopt, string, and math compatibility objects",
+      "classification": "linked",
+      "license_sources": [
+        "mingw-w64-crt/misc/getopt.c",
+        "mingw-w64-crt/stdio/strtok_r.c",
+        "mingw-w64-crt/math/s_erf.c"
+      ],
+      "evidence": "The installed mingw-w64 CRT and mingwex archives supply compatibility entry points that static FFmpeg and its dependencies may resolve, including getopt, reentrant string handling, and fdlibm math. Representative sources retain the complete upstream BSD and Sun notices for these distinct code families."
+    },
+    {
+      "id": "mingw-unbuilt-tools-tests-and-architectures",
+      "parent_recipe": "mingw",
+      "source_recipe": "scripts.d-10-mingw.sh",
+      "source_path": "tools, tests, profiling support, pseh, alternate architectures, and shared winpthreads",
+      "classification": "excluded",
+      "license_sources": [],
+      "evidence": "The fixed recipe builds only headers, the selected x86_64 UCRT CRT, and static winpthreads. Repository tools, tests, profiling helpers, pseh, ARM and 32-bit variants, and the shared pthread library are not part of the portable executable."
+    }
+  ]
+}

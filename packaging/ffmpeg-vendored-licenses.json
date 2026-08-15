@@ -1,0 +1,1155 @@
+{
+  "schema_version": 1,
+  "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
+  "audited_recipe_count": 77,
+  "audited_recipes": [
+    "amf",
+    "aom",
+    "aribb24",
+    "brotli",
+    "chromaprint",
+    "dav1d",
+    "ffnvcodec",
+    "fftw3",
+    "fontconfig",
+    "freetype",
+    "freetype-bootstrap",
+    "fribidi",
+    "gme",
+    "gmp",
+    "harfbuzz",
+    "kvazaar",
+    "lcevcdec",
+    "lcms2",
+    "libaribcaption",
+    "libass",
+    "libbluray",
+    "libiconv",
+    "libjxl",
+    "libmp3lame",
+    "libogg",
+    "libopenmpt",
+    "libopus",
+    "libplacebo",
+    "libpng",
+    "librist",
+    "libsamplerate",
+    "libssh",
+    "libtheora",
+    "libudfread",
+    "libunibreak",
+    "libva",
+    "libvorbis",
+    "libvpx",
+    "libwebp",
+    "libxml2",
+    "libzmq",
+    "lilv",
+    "lv2",
+    "mbedtls",
+    "mingw",
+    "mingw-std-threads",
+    "onevpl",
+    "openal",
+    "openapv",
+    "opencl",
+    "opencore-amr",
+    "openh264",
+    "openjpeg",
+    "openssl",
+    "rav1e",
+    "sdl",
+    "serd",
+    "shaderc",
+    "snappy",
+    "sord",
+    "soxr",
+    "spirv-cross",
+    "spirv-headers",
+    "sratom",
+    "srt",
+    "svtav1",
+    "twolame",
+    "uavs3d",
+    "vmaf",
+    "vulkan-headers",
+    "vulkan-loader",
+    "vvenc",
+    "xz",
+    "zimg",
+    "zix",
+    "zlib",
+    "zvbi"
+  ],
+  "vendored_code_review_complete": true,
+  "release_ready": false,
+  "review_note": "All seventy-seven fixed recipe source trees have been audited for vendored-code paths. Linked notices are staged; overall release readiness remains subject to the remaining audit and release gates.",
+  "dependencies": [
+    {
+      "id": "openal-fmt",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/openal-fmt/LICENSE",
+          "sha256": "07580f2a3b35709ce703d523f447b242f6dfec7582a8c0df102c7fa2849375f8"
+        }
+      ]
+    },
+    {
+      "id": "openal-gsl",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/openal-gsl/LICENSE",
+          "sha256": "4c21dc82a1c7186ea754fd59d504c00947953a3401fe8e24eaa44109ef8e2555"
+        }
+      ]
+    },
+    {
+      "id": "openal-pffft",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/openal-pffft/LICENSE-pffft",
+          "sha256": "64056328b3e7bc104e24ef96accc1a7abead156f0c02d1b87c97e3f3a28030de"
+        }
+      ]
+    },
+    {
+      "id": "sdl-hidapi",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/sdl-hidapi/LICENSE.txt",
+          "sha256": "7d3b087c34f35d4d538e3bcddd1ff8f66e92f9ef336881999482800ddf840913"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/sdl-hidapi/LICENSE-bsd.txt",
+          "sha256": "30eb1bef29b46f8ba7ab8b416035dbd93cb034a45481dd97815b944284582cd2"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/sdl-hidapi/LICENSE-gpl3.txt",
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/sdl-hidapi/LICENSE-orig.txt",
+          "sha256": "fb5436aa63d1b71a8dfbf74ecaf1a5b4e1ec4df7f80074d11fec99284f69ca5f"
+        }
+      ]
+    },
+    {
+      "id": "sdl-yuv2rgb",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/sdl-yuv2rgb/LICENSE",
+          "sha256": "f7d74004cc75778cae46c5f0139f244d67c07ef64cf51937e8272352197dcb18"
+        }
+      ]
+    },
+    {
+      "id": "libopenmpt-minimp3",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libopenmpt-minimp3/LICENSE",
+          "sha256": "6a1ee543e5282cd9061881edf462e6fdab181f328da71fc2c9a6950a80e94d01"
+        }
+      ]
+    },
+    {
+      "id": "libopenmpt-miniz",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libopenmpt-stb-vorbis",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libopenmpt-pugixml",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libopenmpt-nlohmann-json",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libiconv-libcharset",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libiconv-libcharset/COPYING.LIB",
+          "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95"
+        }
+      ]
+    },
+    {
+      "id": "chromaprint-kissfft",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "chromaprint-googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "gme-emu2413",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/gme-emu2413/LICENSE",
+          "sha256": "8fb093f26ed0d78c8ca033bbec7063ac5b34c5d2475e6bd121d03ccfaaf2355f"
+        }
+      ]
+    },
+    {
+      "id": "kvazaar-threadwrapper",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libzmq-wepoll",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libzmq-wepoll/license.txt",
+          "sha256": "3e56262d2c0e9492f113089916ed624e98f88b31dfd6acae24ede59cdfda5a69"
+        }
+      ]
+    },
+    {
+      "id": "libzmq-sha1",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libzmq-unity",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "svtav1-fastfeat",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/svtav1-fastfeat/LICENSE",
+          "sha256": "043dcfd059386f9facd376351b2bd79325778744aa442177390cdfcca54babed"
+        }
+      ]
+    },
+    {
+      "id": "svtav1-safestringlib",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "vvenc-nlohmann-json",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vvenc-nlohmann-json/LICENSE.MIT",
+          "sha256": "6f48a03625699eea99e599744efea0bf9c9dd67a669e65554df1cd726b8a2477"
+        }
+      ]
+    },
+    {
+      "id": "vvenc-simde",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "zlib-minizip",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libxml2-html-tokenizer-tests",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openssl-text-template",
+      "classification": "build_tool",
+      "license_files": []
+    },
+    {
+      "id": "onevpl-examples",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "onevpl-googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "aom-fastfeat",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/aom-fastfeat/LICENSE",
+          "sha256": "499041ddee5227b6f29ca06c17803e5fe24d60f243c69635cd76b7ba08d0ddd5"
+        }
+      ]
+    },
+    {
+      "id": "aom-vector",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/aom-vector/LICENSE",
+          "sha256": "ff6c857ce2708e87701323078aef115c1872a1f80a9649f86dc899b48083bc60"
+        }
+      ]
+    },
+    {
+      "id": "aom-x86inc",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/aom-x86inc/LICENSE",
+          "sha256": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8"
+        }
+      ]
+    },
+    {
+      "id": "aom-googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "aom-highway",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "aom-libwebm",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "aom-libyuv",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libvpx-x86inc",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libvpx-x86inc/LICENSE",
+          "sha256": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8"
+        }
+      ]
+    },
+    {
+      "id": "libvpx-googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libvpx-libwebm",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libvpx-libyuv",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libvpx-nalloc",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "lcevcdec-vma",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "opencore-amr-android-source",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/opencore-amr-android-source/NOTICE",
+          "sha256": "d106802b5e406073c1d10fbe9f638234c6973ebce37df71773179642085eb489"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/opencore-amr-android-source/patent_disclaimer.txt",
+          "sha256": "f91a72705d38de34a9749c214a4cbc6ffa1da753b34b2cd11f3d6798f24ae59f"
+        }
+      ]
+    },
+    {
+      "id": "openjpeg-opjviewer",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openjpeg-astyle",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openjpeg-liblcms2",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openjpeg-libpng",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openjpeg-libtiff",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openjpeg-libz",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openjpeg-googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "soxr-pffft",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/soxr-pffft/pffft.c",
+          "sha256": "2949635f6107983832a7fcb6b7a539b43022fdd64d6cc01904ff5f7d792bb4c4"
+        }
+      ]
+    },
+    {
+      "id": "soxr-lsr-tests",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "zimg-musl-libm",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "serd-w3c-test-suites",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libpng-gregbook",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libpng-pngminus",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libbluray-asm-java",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libjxl-hevcsoftware-benchmark-data",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libjxl-dirent-benchmark-helper",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "harfbuzz-ms-use-generated-data",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/harfbuzz-ms-use-generated-data/COPYING",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "id": "harfbuzz-fasthash",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/harfbuzz-fasthash/hb-algs.hh",
+          "sha256": "916f8d6d2a6c56955ba3aee99330b2494b89e3ac2da83aaf90c3469a4f5850a4"
+        }
+      ]
+    },
+    {
+      "id": "librist-cjson",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/librist-cjson/cJSON.c",
+          "sha256": "44e3d439ed8de158fc370556b8a9e8b7f7cfc8077befa1c9897b666e0f6a2d9e"
+        }
+      ]
+    },
+    {
+      "id": "librist-lz4",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/librist-lz4/lz4.c",
+          "sha256": "9396f7de527bc8435de9c7569fb7998e56545a84b4f3c2d808c0235c01774539"
+        }
+      ]
+    },
+    {
+      "id": "librist-windows-poll",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/librist-windows-poll/poll_win.c",
+          "sha256": "8ee3bc173b9ba3a1fcb8f71016ab97e45efe2666384747d51c73cfe958b5d114"
+        }
+      ]
+    },
+    {
+      "id": "librist-mingw-time-shim",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/librist-mingw-time-shim/time-shim.c",
+          "sha256": "feb5e33a140f1746f4513748648a1c92d641821c9754571be9313babc361d39d"
+        }
+      ]
+    },
+    {
+      "id": "librist-builtin-mbedtls",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "librist-fallback-crypto",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "librist-getopt-tools",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "librist-linux-crypto",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libass-wyhash",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libass-wyhash/wyhash.h",
+          "sha256": "913e8237e949004a4ff9bb942dd67f4e836799beb0bda320e3999d0be433d0b0"
+        }
+      ]
+    },
+    {
+      "id": "libass-mingw-dwrite-definitions",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libass-mingw-dwrite-definitions/dwrite_c.h",
+          "sha256": "d23bb67651e814fb7629af8ccf64fcbcb61ade9d93e8da44ccab15268187c44a"
+        }
+      ]
+    },
+    {
+      "id": "libass-checkasm",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libwebp-fuzzer-nalloc",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "vmaf-libsvm",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vmaf-libsvm/svm.h",
+          "sha256": "e6fb8e69f83ce9fc84cd0fab5ba8f7d7def203f1a51428e80a041818823d60cc"
+        }
+      ]
+    },
+    {
+      "id": "vmaf-dav1d-x86-cpu",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vmaf-dav1d-x86-cpu/cpu.c",
+          "sha256": "37bc5df17e3710855560268ff1dbd81e284529c573bd54dba8e2e9ff50b8f1e7"
+        }
+      ]
+    },
+    {
+      "id": "vmaf-av-metrics-ciede",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vmaf-av-metrics-ciede/ciede.c",
+          "sha256": "649c37cee0dc63bbe57f06f8afde4f77cdbdc91c859ee51ff5c0cd7a07f3466d"
+        }
+      ]
+    },
+    {
+      "id": "vmaf-mkdirp",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vmaf-mkdirp/mkdirp.c",
+          "sha256": "d07501b62d340755cf1d29a139241dad406b6a27137f24a39c61a8532ce67f72"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/vmaf-mkdirp/Readme.md",
+          "sha256": "38b04029fe37c558f6e4154ab0ee71bf7cb0b62b591f27233ef4b4586a18b753"
+        }
+      ]
+    },
+    {
+      "id": "vmaf-iqa",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vmaf-iqa/convolve.c",
+          "sha256": "ecb49fc4193674831b8ab458e40e2e264f7bb8f13c9c0b4450948b43fc020383"
+        }
+      ]
+    },
+    {
+      "id": "vmaf-xiph-psnr-hvs",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vmaf-xiph-psnr-hvs/psnr_hvs.c",
+          "sha256": "cb9130de193b2bc3704845a5c83d2e5568f5fb515dfee57382ee63f7a9d57378"
+        }
+      ]
+    },
+    {
+      "id": "vmaf-compat-stdatomic",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "vmaf-daala-vidinput-tools",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "vmaf-xiph-integer-ssim",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "freetype-ftl",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/freetype-ftl/FTL.TXT",
+          "sha256": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f"
+        }
+      ]
+    },
+    {
+      "id": "freetype-bdf-and-fthash",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/freetype-bdf-and-fthash/README",
+          "sha256": "7984455e7e5a9faba3797c8bf095fbe10cc846316b7320aff8c58402e22b82fe"
+        }
+      ]
+    },
+    {
+      "id": "freetype-pcf",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/freetype-pcf/README",
+          "sha256": "18d9782898d9eac04476e2f744678137b2a889689ed3e923e052fc396a86f86b"
+        }
+      ]
+    },
+    {
+      "id": "freetype-harfbuzz-autofit",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/freetype-harfbuzz-autofit/ft-hb-ft.c",
+          "sha256": "84dd5ddff1cec222e1755b4962faf45836238dfa3a46854dabd969eb4e50f8be"
+        }
+      ]
+    },
+    {
+      "id": "freetype-bundled-zlib",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "freetype-md5-debug",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "freetype-development-tools",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libtheora-example-getopt",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "xz-cryptopp-derived-sha256",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/xz-cryptopp-derived-sha256/COPYING.0BSD",
+          "sha256": "0b01625d853911cd0e2e088dcfb743261034a091bb379246cb25a14cc4c74bf1"
+        }
+      ]
+    },
+    {
+      "id": "xz-command-getopt",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "xz-scripts-and-extra",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "fribidi-unicode-ucd",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/fribidi-unicode-ucd/ReadMe.txt",
+          "sha256": "14cafa23788d3a20dd21d6b0cdcb8d6dab520781fcd9ad9392f3b88ea607e633"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/fribidi-unicode-ucd/UNICODE-LICENSE.txt",
+          "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+        }
+      ]
+    },
+    {
+      "id": "gmp-mini-gmp",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libudfread-examples",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libunibreak-unicode-generated-data",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libunibreak-unicode-generated-data/UNICODE-LICENSE.txt",
+          "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+        }
+      ]
+    },
+    {
+      "id": "libunibreak-tools-and-test-data",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "snappy-googletest-and-benchmark",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "snappy-testdata",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "twolame-lame-toolame-attribution",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/twolame-lame-toolame-attribution/AUTHORS",
+          "sha256": "89acea387ca97766b248e553ea68400898669b1637cfa31e4ceefff9efa3744d"
+        }
+      ]
+    },
+    {
+      "id": "uavs3d-decoder-app",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openh264-googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openh264-console-and-gmp-module",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "openapv-app-tests-and-util",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "opencl-icd-loader-build-and-test-helpers",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "vulkan-headers-mit-selection",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vulkan-headers-mit-selection/MIT.txt",
+          "sha256": "051daae2dae99c2b0fc9d8363cf704b9456ae0e3c89589ac755d506a0b2c10c3"
+        }
+      ]
+    },
+    {
+      "id": "vulkan-headers-generator-scripts",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "spirv-headers-tools-and-docs",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libva-microsoft-win32",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libva-microsoft-win32/va_win32.c",
+          "sha256": "d0c202138d4d2d15023ecb1e7774d2c19063ac4e13784e5dc763f0c51641844f"
+        }
+      ]
+    },
+    {
+      "id": "brotli-non-c-and-test-trees",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "lcms2-gpl-plugins-and-utilities",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "srt-udt-bsd-core",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/srt-udt-bsd-core/buffer_tools.h",
+          "sha256": "28c59d3576ac5ac852f30edfb6e85a7010c4973672f505c5df31b55c675ef1d0"
+        }
+      ]
+    },
+    {
+      "id": "srt-public-domain-atomic",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/srt-public-domain-atomic/atomic.h",
+          "sha256": "1cfec8865cb6b9ba9b253660ee7e465b02c56c3e39219cf7ce2e665302ec4abb"
+        }
+      ]
+    },
+    {
+      "id": "srt-aladdin-md5",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/srt-aladdin-md5/md5.cpp",
+          "sha256": "8ea91f4e2cff371c6e11fb0387080c14df306b1649044907908c6714602b0898"
+        }
+      ]
+    },
+    {
+      "id": "srt-public-domain-endian-utilities",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/srt-public-domain-endian-utilities/utilities.h",
+          "sha256": "1a7fdbbd32908313003a647da972d7fa9fc2e8de289878f6733824be3d926d2d"
+        }
+      ]
+    },
+    {
+      "id": "fontconfig-public-domain-md5",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/fontconfig-public-domain-md5/fcmd5.h",
+          "sha256": "ffa39ec6991e91d90f18905c886b4662b87db9e61d1b05f25e4662334a3ba261"
+        }
+      ]
+    },
+    {
+      "id": "fontconfig-public-domain-ftglue",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/fontconfig-public-domain-ftglue/ftglue.h",
+          "sha256": "f7318a42473e0b3a12a181f4ee4cbf3979ca0597a947317f239c474c08ed3e2d"
+        }
+      ]
+    },
+    {
+      "id": "fontconfig-disabled-assets-and-tools",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libaribcaption-openwall-md5",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libaribcaption-android-tinyxml2",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libaribcaption-tests-and-embedded-freetype",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "zvbi-alevt-derived-decoder",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/zvbi-alevt-derived-decoder/search.c",
+          "sha256": "2dc5f7d40ab8ebfd2d0fe93d4e753933ef253aed99b0488f05fcf5404eee3ac4"
+        }
+      ]
+    },
+    {
+      "id": "zvbi-disabled-vtx-export",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "zvbi-chains-and-linux-capture-compatibility",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "mingw-std-threads-installed-headers",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/mingw-std-threads-installed-headers/LICENSE",
+          "sha256": "86c148320eb0acc26607ed347e0fde9f49a236d0ec5291d36dc6a7e0e1d26b9f"
+        }
+      ]
+    },
+    {
+      "id": "vulkan-shim-khronos-headers",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/vulkan-shim-khronos-headers/MIT.txt",
+          "sha256": "051daae2dae99c2b0fc9d8363cf704b9456ae0e3c89589ac755d506a0b2c10c3"
+        }
+      ]
+    },
+    {
+      "id": "spirv-cross-khronos-mit-headers",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/spirv-cross-khronos-mit-headers/MIT.txt",
+          "sha256": "8f25018489d6fe0dec34a352314c38dc146247b7de65735790f4398a92afa84b"
+        }
+      ]
+    },
+    {
+      "id": "spirv-cross-cli-tests-and-reference-data",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libssh-openssh-derived-code",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libssh-openssh-derived-code/BSD",
+          "sha256": "0f87c329551cd784a501fc72c7a936c5dbeb527d20e0f87e4d30015edea3cf5d"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/libssh-openssh-derived-code/match.c",
+          "sha256": "50f2de4cc5a090e7eb55394e0d800f0ef19bf0112fe4829b2903ed451dc5725e"
+        }
+      ]
+    },
+    {
+      "id": "libssh-openbsd-bcrypt-pbkdf",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libssh-openbsd-bcrypt-pbkdf/bcrypt_pbkdf.c",
+          "sha256": "087ecb005be6245b398852763e1d6f955cc62924e3c2e7114305dd66476378cd"
+        }
+      ]
+    },
+    {
+      "id": "libssh-openbsd-blowfish",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libssh-openbsd-blowfish/blowfish.c",
+          "sha256": "da3888ebdd3987b655f5af7b8cca104347df42bff299d6f77b78b63207be6551"
+        }
+      ]
+    },
+    {
+      "id": "libssh-libcrux-mlkem",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libssh-libcrux-mlkem/libcrux_mlkem768_sha3.c",
+          "sha256": "e80ba8a6e8db7a3a61d7c993e4d0d564180e788ea8d8c8697f2e6567ac3160c6"
+        }
+      ]
+    },
+    {
+      "id": "libssh-public-domain-crypto-fallbacks",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libssh-public-domain-crypto-fallbacks/sntrup761.c",
+          "sha256": "09afdc0d2c19356a9b1878027d9d9426b1369220eeeea39aee480ad8cab34696"
+        }
+      ]
+    },
+    {
+      "id": "libssh-unused-tools-and-provider-fallbacks",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "rav1e-x264-x86inc",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/rav1e-x264-x86inc/x86inc.asm",
+          "sha256": "895a17d18b987f63153ea16b5823923bcc72d1a14e57e2b6cc55e077b749fda7"
+        }
+      ]
+    },
+    {
+      "id": "rav1e-nonlibrary-assets",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "libmp3lame-replaygain",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libmp3lame-replaygain/gain_analysis.c",
+          "sha256": "8b3fe4970fe6a19906af1573c6fdd7a51eab0599404204857d16fa55f96a83fa"
+        }
+      ]
+    },
+    {
+      "id": "libmp3lame-ron-mayer-fft",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/libmp3lame-ron-mayer-fft/fft.c",
+          "sha256": "5148c76c02607dfd285a71da2ffec64cbdae293c450ac84bdd442a032d94eea1"
+        }
+      ]
+    },
+    {
+      "id": "libmp3lame-disabled-frontend-decoder-and-i386-asm",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "id": "mingw-winpthreads",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/mingw-winpthreads/COPYING",
+          "sha256": "63263614cdd29f2f93cba85e992f041b31f9fc7b4033692f31269489a8a1b177"
+        }
+      ]
+    },
+    {
+      "id": "mingw-crt-public-domain-runtime",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/mingw-crt-public-domain-runtime/DISCLAIMER.PD",
+          "sha256": "87f33608570312a0f2a9745edcb2527275df813b13982e8c3b3f893d88a4141a"
+        }
+      ]
+    },
+    {
+      "id": "mingw-crt-lucent-gdtoa",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/mingw-crt-lucent-gdtoa/gdtoa.c",
+          "sha256": "09ea9686def889450b16910562c5a884e87eee161c52e6c127d373688aac8559"
+        }
+      ]
+    },
+    {
+      "id": "mingw-crt-bsd-compatibility",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-vendored-licenses/mingw-crt-bsd-compatibility/getopt.c",
+          "sha256": "127fc71d1855d84b0aa476137f19dd7fb52cc6e673d92dc867d02e932e877a0b"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/mingw-crt-bsd-compatibility/strtok_r.c",
+          "sha256": "0e488c63ac9422de85785936b37333218bee701eb549460948b46a1b0b29f73e"
+        },
+        {
+          "path": "ffmpeg-vendored-licenses/mingw-crt-bsd-compatibility/s_erf.c",
+          "sha256": "b6a91ffa68aa123aeecf680b22a33c38a9be36c499b1992cbe4c96b9660485e0"
+        }
+      ]
+    },
+    {
+      "id": "mingw-unbuilt-tools-tests-and-architectures",
+      "classification": "excluded",
+      "license_files": []
+    }
+  ]
+}

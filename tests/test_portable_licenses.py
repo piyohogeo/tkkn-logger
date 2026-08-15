@@ -43,3 +43,44 @@ def test_ffmpeg_manifest_pins_reproducible_lgpl_build() -> None:
     assert "/tree/9b6c8969e05b4f0b29f0f85cd501be6b3e582e6b" in manifest["ffmpeg_source_url"]
     assert "/tree/a99e8230eae00d1cee38f23076a7a1f55cd984e2" in manifest["build_source_url"]
     assert FFMPEG_LICENSE_OUTPUT == "FFmpeg-LGPL-3.0-or-later.txt"
+
+
+def test_ffmpeg_component_audit_covers_each_configure_flag_once_or_more() -> None:
+    project = Path(__file__).resolve().parents[1]
+    components = json.loads(
+        (project / "packaging" / "ffmpeg-components.json").read_text(encoding="utf-8")
+    )
+
+    audited = set(components["audited_configure_flags"])
+    represented = {
+        flag
+        for component in components["components"]
+        for flag in component["configure_flags"]
+    }
+
+    assert audited
+    assert represented == audited
+    assert {"chromaprint", "ffnvcodec"} <= audited
+    assert set(components["non_component_enable_flags"]) == {"version3", "pthreads"}
+    assert all(component["revision"] for component in components["components"])
+    assert all(component["license"] for component in components["components"])
+    assert all(component["source_repository"] for component in components["components"])
+
+
+def test_ffmpeg_component_audit_blocks_release_until_notices_are_complete() -> None:
+    project = Path(__file__).resolve().parents[1]
+    components = json.loads(
+        (project / "packaging" / "ffmpeg-components.json").read_text(encoding="utf-8")
+    )
+
+    assert components["release_ready"] is False
+    assert components["blocking_reason"]
+    assert any(component["notice_file"] is None for component in components["components"])
+
+
+def test_project_mit_license_has_expected_copyright() -> None:
+    project = Path(__file__).resolve().parents[1]
+    license_text = (project / "LICENSE").read_text(encoding="utf-8")
+
+    assert license_text.startswith("MIT License\n\nCopyright (c) 2026 piyohogeo\n")
+    assert "Permission is hereby granted, free of charge" in license_text

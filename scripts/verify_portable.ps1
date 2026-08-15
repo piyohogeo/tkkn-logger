@@ -14,6 +14,70 @@ $ffmpegManifestPath = Join-Path $appRootResolved "LICENSES\FFmpeg-MANIFEST.json"
 $dataRoot = Join-Path $appRootResolved "data"
 $createdData = $false
 
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class Tokkun99PortableWindow {
+    private delegate bool EnumWindowsCallback(IntPtr window, IntPtr parameter);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Rect {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [DllImport("user32.dll")]
+    private static extern bool EnumWindows(EnumWindowsCallback callback, IntPtr parameter);
+
+    [DllImport("user32.dll")]
+    private static extern bool IsWindowVisible(IntPtr window);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetClientRect(IntPtr window, out Rect rectangle);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool PostMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetWindowTextLength(IntPtr window);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetWindowText(IntPtr window, System.Text.StringBuilder text, int maximum);
+
+    public static string WindowTitle(IntPtr window) {
+        int length = GetWindowTextLength(window);
+        System.Text.StringBuilder text = new System.Text.StringBuilder(length + 1);
+        GetWindowText(window, text, text.Capacity);
+        return text.ToString();
+    }
+
+    public static IntPtr FindLargestVisibleWindow(uint expectedProcessId) {
+        IntPtr result = IntPtr.Zero;
+        long largestArea = 0;
+        EnumWindows(delegate(IntPtr window, IntPtr parameter) {
+            uint processId;
+            GetWindowThreadProcessId(window, out processId);
+            Rect rectangle;
+            if (processId == expectedProcessId && IsWindowVisible(window) && GetClientRect(window, out rectangle)) {
+                long area = (long)(rectangle.Right - rectangle.Left) * (rectangle.Bottom - rectangle.Top);
+                if (area > largestArea) {
+                    largestArea = area;
+                    result = window;
+                }
+            }
+            return true;
+        }, IntPtr.Zero);
+        return result;
+    }
+}
+"@
+
 if (Test-Path -LiteralPath $dataRoot) {
     throw "Verification requires a clean portable directory without data: $dataRoot"
 }
@@ -25,7 +89,19 @@ foreach ($required in @(
     (Join-Path $appRootResolved "LICENSES\THIRD_PARTY_NOTICES.txt"),
     (Join-Path $appRootResolved "LICENSES\FFmpeg-LGPL-3.0-or-later.txt"),
     (Join-Path $appRootResolved "LICENSES\FFmpeg-BUILD.txt"),
+    (Join-Path $appRootResolved "LICENSES\FFmpeg-COMPONENTS.json"),
+    (Join-Path $appRootResolved "LICENSES\FFmpeg-BUILD-RECIPES.json"),
+    (Join-Path $appRootResolved "LICENSES\FFmpeg-RECIPE-LICENSES.json"),
+    (Join-Path $appRootResolved "LICENSES\FFmpeg-NESTED-LICENSES.json"),
+    (Join-Path $appRootResolved "LICENSES\FFmpeg-NESTED-DEPENDENCIES.json"),
+    (Join-Path $appRootResolved "LICENSES\FFmpeg-VENDORED-LICENSES.json"),
+    (Join-Path $appRootResolved "LICENSES\FFmpeg-VENDORED-CODE.json"),
+    (Join-Path $appRootResolved "LICENSES\FFmpeg-ADDITIONAL-SOURCES.json"),
+    (Join-Path $appRootResolved "LICENSES\RAV1E-CARGO-LICENSES.json"),
+    (Join-Path $appRootResolved "LICENSES\RAV1E-Cargo.lock"),
     $ffmpegManifestPath,
+    (Join-Path $appRootResolved "LICENSE"),
+    (Join-Path $appRootResolved "THIRD_PARTY_ASSETS.md"),
     (Join-Path $appRootResolved "README.txt"),
     (Join-Path $appRootResolved "VERSION.txt")
 )) {
@@ -56,6 +132,7 @@ $savedPath = $env:PATH
 $savedPythonHome = $env:PYTHONHOME
 $savedPythonPath = $env:PYTHONPATH
 $portableProcess = $null
+$portableWindow = [IntPtr]::Zero
 $verificationFailure = $null
 $shutdownFailure = $null
 try {
@@ -69,8 +146,15 @@ try {
     if ($portableProcess.HasExited) {
         throw "Portable GUI exited during startup with code $($portableProcess.ExitCode)"
     }
-    if ($portableProcess.MainWindowTitle -notmatch "Logger$") {
-        throw "Unexpected portable GUI title: $($portableProcess.MainWindowTitle)"
+    $portableWindow = [Tokkun99PortableWindow]::FindLargestVisibleWindow(
+        [uint32]$portableProcess.Id
+    )
+    if ($portableWindow -eq [IntPtr]::Zero) {
+        throw "Could not find the portable Tk window after startup"
+    }
+    $portableTitle = [Tokkun99PortableWindow]::WindowTitle($portableWindow)
+    if ($portableTitle -notmatch "Logger$") {
+        throw "Unexpected portable GUI title: $portableTitle"
     }
     if (-not (Test-Path -LiteralPath (Join-Path $dataRoot "log\tokkun99-logger.log"))) {
         throw "Portable data/log was not created beside the executable"
@@ -86,7 +170,26 @@ finally {
         try {
             $portableProcess.Refresh()
             if (-not $portableProcess.HasExited) {
-                if (-not $portableProcess.CloseMainWindow()) {
+                $portableWindow = [Tokkun99PortableWindow]::FindLargestVisibleWindow(
+                    [uint32]$portableProcess.Id
+                )
+                if ($portableWindow -eq [IntPtr]::Zero) {
+                    throw "Could not find the portable Tk window for safe shutdown"
+                }
+                [uint32]$windowProcessId = 0
+                [void][Tokkun99PortableWindow]::GetWindowThreadProcessId(
+                    $portableWindow,
+                    [ref]$windowProcessId
+                )
+                if ($windowProcessId -ne $portableProcess.Id) {
+                    throw "Portable Tk window belongs to unexpected process $windowProcessId"
+                }
+                if (-not [Tokkun99PortableWindow]::PostMessage(
+                    $portableWindow,
+                    0x0010,
+                    [IntPtr]::Zero,
+                    [IntPtr]::Zero
+                )) {
                     throw "Could not request a safe GUI shutdown"
                 }
                 if (-not $portableProcess.WaitForExit(15000)) {

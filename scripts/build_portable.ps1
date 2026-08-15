@@ -25,6 +25,20 @@ $workRoot = Join-Path $projectRoot "build\pyinstaller"
 $ffmpegCacheRoot = Join-Path $projectRoot "build\ffmpeg-lgpl"
 $ffmpegExtractRoot = Join-Path $ffmpegCacheRoot "extracted"
 $ffmpegManifestPath = Join-Path $projectRoot "packaging\ffmpeg-manifest.json"
+$ffmpegComponentsPath = Join-Path $projectRoot "packaging\ffmpeg-components.json"
+$ffmpegRecipesPath = Join-Path $projectRoot "packaging\ffmpeg-build-recipes.json"
+$ffmpegRecipeLicensesPath = Join-Path $projectRoot "packaging\ffmpeg-recipe-licenses.json"
+$ffmpegRecipeLicenseRoot = Join-Path $projectRoot "packaging\ffmpeg-recipe-licenses"
+$ffmpegNestedLicensesPath = Join-Path $projectRoot "packaging\ffmpeg-nested-licenses.json"
+$ffmpegNestedLicenseRoot = Join-Path $projectRoot "packaging\ffmpeg-nested-licenses"
+$ffmpegNestedDependenciesPath = Join-Path $projectRoot "packaging\ffmpeg-nested-dependencies.json"
+$ffmpegVendoredLicensesPath = Join-Path $projectRoot "packaging\ffmpeg-vendored-licenses.json"
+$ffmpegVendoredLicenseRoot = Join-Path $projectRoot "packaging\ffmpeg-vendored-licenses"
+$ffmpegVendoredCodePath = Join-Path $projectRoot "packaging\ffmpeg-vendored-code.json"
+$ffmpegAdditionalSourcesPath = Join-Path $projectRoot "packaging\ffmpeg-additional-source-classification.json"
+$rav1eCargoLicensesPath = Join-Path $projectRoot "packaging\rav1e-cargo-licenses.json"
+$rav1eCargoLicenseRoot = Join-Path $projectRoot "packaging\rav1e-cargo-licenses"
+$rav1eCargoLockPath = Join-Path $projectRoot "packaging\rav1e-Cargo.lock"
 $ffmpegVerifier = Join-Path $projectRoot "scripts\verify_ffmpeg_distribution.py"
 
 function Remove-SafeBuildDirectory([string]$Path) {
@@ -87,6 +101,14 @@ foreach ($required in @(
     $ffmpeg,
     $ffprobe,
     (Join-Path $ffmpegRootResolved $ffmpegManifest.license_file),
+    $ffmpegComponentsPath,
+    $ffmpegRecipesPath,
+    $ffmpegRecipeLicensesPath,
+    $ffmpegNestedLicensesPath,
+    $ffmpegNestedDependenciesPath,
+    $ffmpegVendoredLicensesPath,
+    $ffmpegVendoredCodePath,
+    $ffmpegAdditionalSourcesPath,
     (Join-Path $projectRoot "data\template\states\v1\profile.json"),
     (Join-Path $projectRoot "data\template\glyphs\v1\profile.json")
 )) {
@@ -97,7 +119,8 @@ foreach ($required in @(
 $verifyArguments = @(
     $ffmpegVerifier,
     "--manifest", $ffmpegManifestPath,
-    "--ffmpeg-root", $ffmpegRootResolved
+    "--ffmpeg-root", $ffmpegRootResolved,
+    "--components", $ffmpegComponentsPath
 )
 if ($null -ne $ffmpegArchive) { $verifyArguments += @("--archive", $ffmpegArchive) }
 & $python @verifyArguments
@@ -139,6 +162,10 @@ finally {
 
 Copy-Item -LiteralPath (Join-Path $projectRoot "packaging\README_PORTABLE.txt") `
     -Destination (Join-Path $appRoot "README.txt")
+Copy-Item -LiteralPath (Join-Path $projectRoot "LICENSE") `
+    -Destination (Join-Path $appRoot "LICENSE")
+Copy-Item -LiteralPath (Join-Path $projectRoot "THIRD_PARTY_ASSETS.md") `
+    -Destination (Join-Path $appRoot "THIRD_PARTY_ASSETS.md")
 & $python -c "import pathlib, sys; sys.path.insert(0, sys.argv[1]); from tokkun99_logger import __version__; pathlib.Path(sys.argv[2]).write_text(__version__ + '\n', encoding='utf-8')" `
     (Join-Path $projectRoot "src") `
     (Join-Path $appRoot "VERSION.txt")
@@ -146,7 +173,21 @@ if ($LASTEXITCODE -ne 0) { throw "Version metadata generation failed" }
 & $python (Join-Path $projectRoot "scripts\collect_portable_licenses.py") `
     --output (Join-Path $appRoot "LICENSES") `
     --ffmpeg-root $ffmpegRootResolved `
-    --ffmpeg-manifest $ffmpegManifestPath
+    --ffmpeg-manifest $ffmpegManifestPath `
+    --ffmpeg-components $ffmpegComponentsPath `
+    --ffmpeg-recipes $ffmpegRecipesPath `
+    --ffmpeg-recipe-licenses $ffmpegRecipeLicensesPath `
+    --ffmpeg-recipe-license-root $ffmpegRecipeLicenseRoot `
+    --ffmpeg-nested-licenses $ffmpegNestedLicensesPath `
+    --ffmpeg-nested-license-root $ffmpegNestedLicenseRoot `
+    --ffmpeg-nested-dependencies $ffmpegNestedDependenciesPath `
+    --ffmpeg-vendored-licenses $ffmpegVendoredLicensesPath `
+    --ffmpeg-vendored-license-root $ffmpegVendoredLicenseRoot `
+    --ffmpeg-vendored-code $ffmpegVendoredCodePath `
+    --ffmpeg-additional-sources $ffmpegAdditionalSourcesPath `
+    --rav1e-cargo-licenses $rav1eCargoLicensesPath `
+    --rav1e-cargo-license-root $rav1eCargoLicenseRoot `
+    --rav1e-cargo-lock $rav1eCargoLockPath
 if ($LASTEXITCODE -ne 0) { throw "License collection failed" }
 
 foreach ($requiredOutput in @(
@@ -161,6 +202,18 @@ foreach ($requiredOutput in @(
     (Join-Path $appRoot "LICENSES\FFmpeg-LGPL-3.0-or-later.txt"),
     (Join-Path $appRoot "LICENSES\FFmpeg-BUILD.txt"),
     (Join-Path $appRoot "LICENSES\FFmpeg-MANIFEST.json"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-COMPONENTS.json"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-BUILD-RECIPES.json"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-RECIPE-LICENSES.json"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-NESTED-LICENSES.json"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-NESTED-DEPENDENCIES.json"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-VENDORED-LICENSES.json"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-VENDORED-CODE.json"),
+    (Join-Path $appRoot "LICENSES\FFmpeg-ADDITIONAL-SOURCES.json"),
+    (Join-Path $appRoot "LICENSES\RAV1E-CARGO-LICENSES.json"),
+    (Join-Path $appRoot "LICENSES\RAV1E-Cargo.lock"),
+    (Join-Path $appRoot "LICENSE"),
+    (Join-Path $appRoot "THIRD_PARTY_ASSETS.md"),
     (Join-Path $appRoot "README.txt"),
     (Join-Path $appRoot "VERSION.txt")
 )) {

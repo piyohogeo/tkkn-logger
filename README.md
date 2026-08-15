@@ -2,6 +2,8 @@
 
 『特訓'99 -君よ、男避けに避けろ-』のゲーム画面を観測し、プレイ結果・ハイスコア動画・終了時メッセージを自動記録するWindows用ロガーです。ゲームへキー入力やEnterを送るコードはありません。
 
+実行用ポータブル版は[GitHub Releases](https://github.com/piyohogeo/tkkn-logger/releases)から取得します。`Tokkun99Logger-v0.1.0-windows-x64.zip`がWindows用実行ファイルです。GitHubが自動生成する`Source code (zip)`には実行環境やFFmpegが含まれません。
+
 ## 対象ゲーム
 
 オリジナル版は、作者びい氏の[『特訓'99』配布ページ](https://bee.in.coocan.jp/tk)から入手できます。サイトのトップページは[「やればできる。」](https://bee.in.coocan.jp/)です。
@@ -240,6 +242,14 @@ py -3.10 -m venv .venv
 - ゲーム側の未知のRESULT配置・未知数字字形はレビュー対象になる
 - MESSAGEの近似ハッシュは候補提示だけに使い、自動統合しない
 - ディスク枯渇試験は安全なしきい値模擬で行い、実際にディスクを満杯にはしない
+
+## ライセンス
+
+ロガー本体のソースコードは[MIT License](LICENSE)です。Copyright (c) 2026 piyohogeo.
+
+同梱FFmpeg、Python依存パッケージ等にはそれぞれのライセンスが適用されます。`data/template/`に含まれるゲーム画面由来の小さな認識テンプレートを含め、第三者資産をMIT Licenseで再許諾するものではありません。詳細は[第三者資産の注記](THIRD_PARTY_ASSETS.md)とポータブル版の`LICENSES/`を参照してください。『特訓'99』本体はリポジトリにもReleaseにも含まれません。
+
+ポータブル版のEXEと同梱FFmpegは未署名です。Windows SmartScreenやMicrosoft Defenderの警告が表示される可能性があります。
 
 ## キャプチャ方式
 

@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 build/
 dist/
+release/
 
 # Local runtime collections, logs, game-derived captures, and audits
 data/*

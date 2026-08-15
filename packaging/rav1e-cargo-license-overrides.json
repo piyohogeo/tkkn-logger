@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "packages": {
+    "profiling@1.0.16": {
+      "crate_vcs_revision": "0ba524064aae5b4972e6be3424a2acb316f93ba3",
+      "reason": "The crates.io package declares MIT OR Apache-2.0 but omits the repository-root license files.",
+      "files": [
+        {
+          "path": "rav1e-cargo-license-overrides/profiling-1.0.16/LICENSE-APACHE",
+          "url": "https://raw.githubusercontent.com/aclysma/profiling/0ba524064aae5b4972e6be3424a2acb316f93ba3/LICENSE-APACHE",
+          "sha256": "10d30a673cd5e9349bdc02aeb48f14b3386d27d0da32df8f0a555d4aa16aa551"
+        },
+        {
+          "path": "rav1e-cargo-license-overrides/profiling-1.0.16/LICENSE-MIT",
+          "url": "https://raw.githubusercontent.com/aclysma/profiling/0ba524064aae5b4972e6be3424a2acb316f93ba3/LICENSE-MIT",
+          "sha256": "c8167fdeeed46d3f244d3f85c5bf998ce889343691c32be2c61a8bc4b5c08333"
+        }
+      ]
+    }
+  },
+  "toolchain_components": [
+    {
+      "name": "Rust standard library",
+      "version": "1.97.1",
+      "target": "x86_64-pc-windows-gnu",
+      "rustc_commit": "8bab26f4f68e0e26f0bb7960be334d5b520ea452",
+      "distribution_url": "https://static.rust-lang.org/dist/2026-07-16/rustc-1.97.1-x86_64-pc-windows-gnu.tar.xz",
+      "distribution_sha256": "11de14fa7ee410e9baaa070ce0cda44e155c0e9e32329db0b5f20efc0f2fa5e4",
+      "binary_evidence": [
+        "rustc/8bab26f4f68e0e26f0bb7960be334d5b520ea452",
+        "addr2line-0.25.1",
+        "gimli-0.32.3",
+        "object-0.37.3",
+        "rustc-demangle-0.1.27"
+      ],
+      "reason": "The distributed ffmpeg.exe contains Rust standard-library and backtrace source paths from this exact rustc commit. These toolchain-linked objects are outside rav1e's Cargo.lock, so the official standard-library copyright report and applicable license texts are staged separately.",
+      "files": [
+        {
+          "path": "rav1e-cargo-license-overrides/rust-std-1.97.1/COPYRIGHT",
+          "origin": "rustc-distribution",
+          "sha256": "172020dbfd5b53a226dfde77616190a48dcff519b0bc0e6deb91a8450782c4af"
+        },
+        {
+          "path": "rav1e-cargo-license-overrides/rust-std-1.97.1/COPYRIGHT-library.html",
+          "origin": "rustc-distribution",
+          "sha256": "0a65bb747c49c7bb816cbc7188319bd6e4e8d08091c1190b8a3c0971c47968ed"
+        },
+        {
+          "path": "rav1e-cargo-license-overrides/rust-std-1.97.1/LICENSE-APACHE",
+          "origin": "rustc-distribution",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a"
+        },
+        {
+          "path": "rav1e-cargo-license-overrides/rust-std-1.97.1/LICENSE-MIT",
+          "origin": "rustc-distribution",
+          "sha256": "b71bd43a069ca0641a9ecfe585ca7b3c53b5cc1608f8b68321168698e28b5ea1"
+        },
+        {
+          "path": "rav1e-cargo-license-overrides/rust-std-1.97.1/Unicode-3.0.txt",
+          "origin": "rustc-distribution",
+          "sha256": "f5062c9a188d81dfe66b56db4182dcf9e4b17c0d9b0d311a8e20b3a1b075c443"
+        }
+      ]
+    }
+  ]
+}

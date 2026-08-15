@@ -44,7 +44,12 @@ def run_tool(path: Path, *arguments: str) -> str:
     return completed.stdout + completed.stderr
 
 
-def verify(manifest_path: Path, ffmpeg_root: Path, archive: Path | None = None) -> dict[str, str]:
+def verify(
+    manifest_path: Path,
+    ffmpeg_root: Path,
+    archive: Path | None = None,
+    components_path: Path | None = None,
+) -> dict[str, str]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     ffmpeg = ffmpeg_root / "bin" / "ffmpeg.exe"
     ffprobe = ffmpeg_root / "bin" / "ffprobe.exe"
@@ -77,6 +82,27 @@ def verify(manifest_path: Path, ffmpeg_root: Path, archive: Path | None = None) 
     for required_option in ("--arch=x86_64", "--target-os=mingw32", "--enable-version3"):
         if required_option not in configure_line:
             raise ValueError(f"Required FFmpeg configure option is missing: {required_option}")
+    if components_path is not None:
+        component_manifest = json.loads(components_path.read_text(encoding="utf-8"))
+        audited = set(component_manifest["audited_configure_flags"])
+        represented = {
+            flag
+            for component in component_manifest["components"]
+            for flag in component["configure_flags"]
+        }
+        if audited != represented:
+            raise ValueError("FFmpeg component entries do not match audited configure flags")
+        missing_flags = sorted(flag for flag in audited if f"--enable-{flag}" not in configure_line)
+        if missing_flags:
+            raise ValueError("FFmpeg component flags are missing: " + ", ".join(missing_flags))
+        enabled_flags = set(re.findall(r"--enable-([a-z0-9-]+)", configure_line))
+        non_component = set(component_manifest["non_component_enable_flags"])
+        unexpected_flags = sorted(enabled_flags - audited - non_component)
+        if unexpected_flags:
+            raise ValueError(
+                "Enabled FFmpeg flags are missing from the component audit: "
+                + ", ".join(unexpected_flags)
+            )
 
     encoders_output = run_tool(ffmpeg, "-encoders")
     if re.search(r"^\s*V\S*\s+mpeg4\s", encoders_output, re.MULTILINE) is None:
@@ -102,12 +128,14 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--ffmpeg-root", type=Path, required=True)
     parser.add_argument("--archive", type=Path)
+    parser.add_argument("--components", type=Path)
     args = parser.parse_args()
 
     result = verify(
         args.manifest.resolve(),
         args.ffmpeg_root.resolve(),
         args.archive.resolve() if args.archive else None,
+        args.components.resolve() if args.components else None,
     )
     print(f"Verified LGPL FFmpeg: {result['ffmpeg']}")
     print(f"ffmpeg.exe SHA-256: {result['ffmpeg_sha256']}")

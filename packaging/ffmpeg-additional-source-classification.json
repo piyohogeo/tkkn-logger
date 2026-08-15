@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "target": "win64",
+  "ffmpeg_addin": "8.1",
+  "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
+  "review_complete": true,
+  "release_ready": true,
+  "sources": [
+    {
+      "id": "scripts.d/20-libiconv.sh#source2",
+      "classification": "build_tool",
+      "evidence": "The recipe supplies this fixed gnulib checkout to libiconv autogen.sh. Imported runtime objects are archived as srclib/libicrt.a and linked only into the dependency's iconv command, while FFmpeg links lib/libiconv.a. BtbN does not copy the dependency command into its FFmpeg archive, so the remaining copied scripts, M4 macros, and build helpers are build-only."
+    },
+    {
+      "id": "scripts.d/45-opencl.sh#source2",
+      "classification": "linked",
+      "evidence": "The recipe builds and installs the static OpenCL ICD Loader from SCRIPT_REPO2."
+    },
+    {
+      "id": "scripts.d/47-vulkan/45-vulkan-loader.sh#source2",
+      "classification": "linked",
+      "evidence": "Vulkan-Headers from SCRIPT_REPO2 supplies headers to the built Vulkan shim loader."
+    },
+    {
+      "id": "scripts.d/50-ffnvcodec.sh#source1",
+      "classification": "excluded",
+      "evidence": "The fixed FFmpeg 8.1 add-in satisfies FFVER <= 801, so the recipe does not install the default ffnvcodec checkout."
+    },
+    {
+      "id": "scripts.d/50-ffnvcodec.sh#source2",
+      "classification": "linked",
+      "evidence": "The fixed FFmpeg 8.1 add-in satisfies FFVER <= 801 and installs the sdk/13.0 checkout from SCRIPT_REPO2."
+    },
+    {
+      "id": "scripts.d/50-ffnvcodec.sh#source3",
+      "classification": "excluded",
+      "evidence": "SCRIPT_REPO3 is installed only when FFVER < 800; the fixed add-in is 8.1."
+    },
+    {
+      "id": "scripts.d/50-libopus.sh#opus-data",
+      "classification": "excluded",
+      "evidence": "Opus autogen.sh downloads and extracts the archive identified by this SHA-256, but the fixed BtbN recipe does not enable DRED, Deep PLC, or OSCE and disables extra programs. The downloaded model and generated DNN sources are therefore not compiled or installed."
+    }
+  ]
+}

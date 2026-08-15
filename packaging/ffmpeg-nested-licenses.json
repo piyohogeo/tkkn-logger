@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
+  "linked_nested_notices_complete": true,
+  "vendored_code_review_complete": true,
+  "release_ready": false,
+  "review_note": "Root notices are staged for explicitly fetched linked nested sources, and the separate fixed-recipe vendored-code review is complete.",
+  "dependencies": [
+    {
+      "recipe": "shaderc/glslang",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/shaderc-glslang/LICENSE.txt",
+          "sha256": "7d4c1655be3a4d99e8a4859335e28c8950f2e7f72dcf3eed3379846120f5bf47"
+        }
+      ]
+    },
+    {
+      "recipe": "shaderc/SPIRV-Headers",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/shaderc-SPIRV-Headers/LICENSE",
+          "sha256": "ea43b1de38a6f90c488800d66dec1ed671e68cda530266bc96951fb5b6307613"
+        }
+      ]
+    },
+    {
+      "recipe": "shaderc/SPIRV-Tools",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/shaderc-SPIRV-Tools/LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        }
+      ]
+    },
+    {
+      "recipe": "shaderc/abseil-cpp",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "shaderc/effcee",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "shaderc/googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "shaderc/re2",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "libplacebo/glad",
+      "classification": "linked_generated",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/libplacebo-glad/LICENSE",
+          "sha256": "cbb325cd4ac5bd06717ffa34a322b984f9d285e4c67c8ca1b7380d6ef08c2a77"
+        }
+      ]
+    },
+    {
+      "recipe": "libplacebo/fast_float",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/libplacebo-fast_float/LICENSE-APACHE",
+          "sha256": "097a889aa954d04e088b790b10a4014d6189561d0a6013935a73ce3d4ddaaf06"
+        },
+        {
+          "path": "ffmpeg-nested-licenses/libplacebo-fast_float/LICENSE-BOOST",
+          "sha256": "8d8291caf1cee26d23acf3eb67c9f9a2d58f1c681b16a4fbe8cbfb9e3c0b5a9b"
+        },
+        {
+          "path": "ffmpeg-nested-licenses/libplacebo-fast_float/LICENSE-MIT",
+          "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6"
+        }
+      ]
+    },
+    {
+      "recipe": "libplacebo/Vulkan-Headers",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/libplacebo-Vulkan-Headers/LICENSE.md",
+          "sha256": "f43ba543d73f08f7401d99b697b2b741704eb22b5447a5021fd92b279b297646"
+        }
+      ]
+    },
+    {
+      "recipe": "libplacebo/jinja",
+      "classification": "build_tool",
+      "license_files": []
+    },
+    {
+      "recipe": "libplacebo/markupsafe",
+      "classification": "build_tool",
+      "license_files": []
+    },
+    {
+      "recipe": "libplacebo/nuklear",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "libjxl/highway",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/libjxl-highway/LICENSE",
+          "sha256": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1"
+        },
+        {
+          "path": "ffmpeg-nested-licenses/libjxl-highway/LICENSE-BSD3",
+          "sha256": "d25e82e26acd42ca3ccc9993622631163425b869b9e16284226d534cff6470f2"
+        }
+      ]
+    },
+    {
+      "recipe": "mbedtls/mbedtls-framework",
+      "classification": "build_tool",
+      "license_files": []
+    },
+    {
+      "recipe": "mbedtls/TF-PSA-Crypto",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/mbedtls-TF-PSA-Crypto/LICENSE",
+          "sha256": "da8c58f05f135a9d15e9ffad4ecf854cfcc1f014c8abfd75ba05f62630ccc118"
+        }
+      ]
+    },
+    {
+      "recipe": "mbedtls/TF-PSA-Crypto/mldsa-native",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "zimg/graphengine",
+      "classification": "linked",
+      "license_files": [
+        {
+          "path": "ffmpeg-nested-licenses/zimg-graphengine/COPYING",
+          "sha256": "7637386b5f81e8a719ca336233149005e5fa28b5e6054ea7b67de49355b0ad40"
+        }
+      ]
+    },
+    {
+      "recipe": "zimg/googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "zimg/graphengine/googletest",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/pyca-cryptography",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/krb5",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/gost-engine",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/wycheproof",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/tlsfuzzer",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/python-ecdsa",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/tlslite-ng",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/oqs-provider",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/cloudflare-quiche",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/fuzz-corpora",
+      "classification": "excluded",
+      "license_files": []
+    },
+    {
+      "recipe": "openssl/pkcs11-provider",
+      "classification": "excluded",
+      "license_files": []
+    }
+  ]
+}
