@@ -15,7 +15,7 @@
   -> GitHub Releasesで公開
 ```
 
-**今回まず実装するのは第1段階のGUI化だけである。** 第2・第3段階のための境界設計は行うが、この段階でPyInstaller導入、FFmpegバイナリ同梱、GitHub Actions作成、タグ作成、Release公開は行わない。
+第1段階のGUI化はコミット`868e380`で完了した。**次に実装するのは第2段階のPyInstaller `onedir`化である。** そのローカル成果物を検証した後、第3段階としてGitHub Actions上で同じビルドを再現し、GitHub Releaseへ公開する。
 
 ## 2. 調査時点のリポジトリ状態
 
@@ -23,9 +23,9 @@
 
 - リポジトリ: `https://github.com/piyohogeo/tkkn-logger.git`
 - ブランチ: `agent/sortable-artifact-filenames`
-- HEAD: `cec4564` (`Hide unfinished MP4 recordings`)
+- HEAD: `3817f27` (`Add automatic game monitoring`)
 - ローカルブランチは`origin/agent/sortable-artifact-filenames`を追跡しており、調査時の作業ツリーはクリーンだった。
-- テスト結果: **58 passed, 1 skipped**
+- テスト結果: ローカル実データを使うテストを除き **74 passed**。ローカルlive-smokeテストは、実装開始時に書き込み可能な通常環境で別途確認する。
 - Python: `>=3.10,<3.11`
 - 主要依存: NumPy 1.26.4、OpenCV 4.11.0.86、MSS 10.2.0、windows-capture 2.0.0、pywin32 312
 - 既定キャプチャ: Windows Graphics Capture (WGC)
@@ -37,7 +37,7 @@ Codexは実装開始時に、必ず改めて`git status`、現在のブランチ
 
 ## 3. 現在できていること
 
-既存機能をGUI化の過程で退行させないこと。
+既存機能をEXE化・配布自動化の過程で退行させないこと。
 
 - ゲームへのキー入力、Enter送信、操作注入を一切行わない。
 - `TITLE -> PLAYING -> RESULT -> MESSAGE -> TITLE`を3フレームのデバウンス付きで観測する。
@@ -73,7 +73,7 @@ Codexは実装開始時に、必ず改めて`git status`、現在のブランチ
 
 ## 5. 三段階の全体像
 
-### 第1段階: GUI化（今回の実装対象）
+### 第1段階: GUI化（完了）
 
 - Tkinter/ttkを使用する。
 - 既存ロガーのメインループを`LoggerService`へ抽出する。
@@ -83,7 +83,7 @@ Codexは実装開始時に、必ず改めて`git status`、現在のブランチ
 - 開始、停止、状態、録画時間、記録、メッセージ数、保持モード、データフォルダを扱う。
 - 既存CLI機能は残す。
 
-### 第2段階: ポータブルEXE化（今回は設計上の準備のみ）
+### 第2段階: ポータブルEXE化（次の実装対象）
 
 - PyInstaller `onedir`を使用する。
 - Python、NumPy、OpenCV、windows-capture、MSS、pywin32、Tcl/Tk、FFmpeg、固定テンプレートを同梱する。
@@ -92,14 +92,25 @@ Codexは実装開始時に、必ず改めて`git status`、現在のブランチ
 - Python、Conda、FFmpeg未導入のWindows環境またはWindows Sandboxで検証する。
 - 最初から`onefile`を目指さない。
 
-### 第3段階: GitHub Release化（今回は実装しない）
+### 第3段階: GitHub Release化（第2段階の検証後）
 
 - `Tokkun99Logger-vX.Y.Z-windows-x64.zip`をRelease assetとして添付する。
 - `SHA256SUMS.txt`を添付する。
-- 最初はローカルビルドをプレリリースへ手動添付する。
-- 次にGitHub Actionsの手動実行でビルドする。
+- 最初にローカルで`onedir`ビルドを成立させるが、そのローカル成果物を正式配布物にはしない。
+- GitHub Actionsの手動実行で同じビルドを再現し、最初のプレリリースを作る。
 - 最終的に`v*`タグを契機にテスト、ビルド、ZIP、ハッシュ、Release添付を自動化する。
 - GitHubが自動生成する「Source code (zip)」をアプリ本体と誤解させないREADMEにする。
+
+### 配布形式についての確定事項
+
+- 一般配布物は**PyInstaller `onedir`版のZIPだけ**とする。
+- ポータブルPythonランタイム＋BAT版は作らない。
+- `.venv`をコピーして配布しない。
+- PyInstaller `onefile`版は作らない。
+- 初期段階ではインストーラーや自動アップデーターを作らない。
+- 配布物は公開されたソース、PyInstaller spec、固定依存、GitHub Actions workflowから再現できるようにする。
+- Release assetにはSHA-256を添付し、ビルド元のGitタグとコミットをRelease notesへ記載する。
+- GitHub Actionsで作ったこと自体はコード署名ではない。未署名EXEに対するSmartScreen警告の可能性は別途明記する。
 
 ## 6. 第1段階の設計原則
 
@@ -413,7 +424,7 @@ GUI起動時、run確定後、手動再表示時のいずれかで更新する�
 
 ### 11.1 既存回帰テスト
 
-変更前の基準は`58 passed, 1 skipped`。GUI化後も既存テストを全て通す。
+GUI化前の基準は`58 passed, 1 skipped`だった。現在のテスト構成を基準に、EXE化後も全て通す。
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
@@ -464,7 +475,7 @@ Tkが使えないCI環境では、理由が明確なskipにする。主要ロジ
 9. 再起動し、放棄partial回収と統計再読込を確認する。
 10. GUI版停止後にCLI版、CLI版停止後にGUI版を起動し、ロックが正常解放されることを確認する。
 
-## 12. 第1段階の推奨実装順序
+## 12. 第1段階の実装順序（完了済み）
 
 ### Step 0: ベースライン確認
 
@@ -537,13 +548,13 @@ Tkが使えないCI環境では、理由が明確なskipにする。主要ロジ
 - 対象未検出、複数検出、サイズ不一致、FFmpeg欠落、容量不足を分かりやすく表示する。
 - GUIとCLIが同一の監視サービスを使い、ロジックが二重化されていない。
 - 既存CLIが引き続き動く。
-- 既存58件の通過テストを含め、全テストが通る。
+- 現在のテスト構成を含め、全テストが通る。
 - 実ゲームの最低1runで、動画・スコア・メッセージ・記録判定がGUI化前と一致する。
 - ゲームへの入力送信コードが存在しない。
 - 実データ、動画、SQLite、ユーザー固有ログがGit管理へ追加されていない。
 - READMEが更新されている。
 
-## 14. 第1段階の非目標
+## 14. 第1段階で対象外とした項目
 
 - PyInstallerビルド
 - 単一EXE化
@@ -600,30 +611,30 @@ Tokkun99Logger/
 
 Release作業は次の順序で成熟させる。
 
-1. ローカルビルドしたZIPをプレリリースへ手動添付する。
-2. GitHub Actionsの`workflow_dispatch`でWindowsビルドを作る。
-3. `v*`タグでテストとビルドを行い、Release assetを自動添付する。
+1. ローカル`onedir`ビルドは成立性とWindows Sandbox等での検証だけに使う。
+2. GitHub Actionsの`workflow_dispatch`でWindowsビルドを再現し、その成果物を最初のプレリリースへ添付する。
+3. `v*`タグでテストとビルドを行い、Release assetとSHA-256を自動添付する。
 4. 十分に安定した後だけ、自動で正式Releaseを公開する。
 
 Actionsの短期Artifactを一般配布先にせず、正式成果物はGitHub Release assetにする。FFmpegの配布ライセンス、使用ビルド、チェックサム、第三者ライセンス表示を確定してから公開する。未署名EXEではWindows SmartScreen警告が出る可能性をREADMEとRelease notesに記載する。
 
 ## 17. Codexへの作業ルール
 
-- 第1段階だけを実装し、承認なく第2・第3段階へ進まない。
+- GUI化は完了済みである。次は第2段階だけを実装し、承認なくRelease公開へ進まない。
 - 既存のConda環境を変更しない。現在の専用`.venv`を使う。
 - 新規依存が不要なTkinter/ttkを優先する。
 - 不要なパッケージをインストールしない。
 - ユーザーの未コミット変更を消さない。
 - `data/collection`、`data/log`、`artifacts`の実データをGitへ追加しない。
 - ゲーム本体やゲーム配布物をリポジトリへ追加しない。
-- 大きな一括書き換えを避け、設定、キャプチャ移動、サービス抽出、GUIの順に小さく検証する。
+- 大きな一括書き換えを避け、PyInstaller spec、ローカル`onedir`ビルド、クリーン環境検証、GitHub Actionsの順に小さく検証する。
 - 各段階でテストを実行し、退行箇所を早く特定する。
 - 実機確認が必要な項目は自動テスト済み項目と区別して報告する。
-- GUI化完了時に、変更ファイル、テスト結果、未実施の実機確認、第2段階へ残した課題をまとめる。
+- EXE化完了時に、変更ファイル、テスト結果、Windows Sandbox等での検証結果、第3段階へ残した課題をまとめる。
 - ユーザーから明示されない限り、commit、push、PR、タグ、Release公開を行わない。
 
-## 18. 実装開始時にCodexへ渡す短い指示
+## 18. 次工程開始時にCodexへ渡す短い指示
 
 以下をそのまま実装開始指示として使用できる。
 
-> `GUI_PORTABLE_RELEASE_PLAN.md`を最初から最後まで読み、最新のリポジトリ状態と既存テストを確認してください。今回は第1段階のGUI化だけを実装してください。既存ライブロガーを再利用可能な`LoggerService`へ抽出し、Tkinter/ttk GUIから安全に開始・停止できるようにしてください。CLI互換性、WGC既定/MSS代替選択、既存データ形式、録画安全性、入力注入を行わない要件を維持してください。固定リソース・書き込みデータ・FFmpegのパス境界を設け、後のPyInstaller onedir化に備えてください。既存のユーザー変更と実データを保護し、テストを追加・実行してください。PyInstaller、GitHub Actions、タグ、Release公開にはまだ進まないでください。
+> `GUI_PORTABLE_RELEASE_PLAN.md`を最初から最後まで読み、最新のリポジトリ状態と既存テストを確認してください。GUI化は完了済みです。今回は第2段階としてPyInstaller `onedir`のポータブルWindows x64版を実装してください。ポータブルPython＋BAT版、`onefile`版、インストーラーは作らないでください。WGC既定/MSS代替、CLI互換性、既存データ形式、録画安全性、入力注入を行わない要件を維持してください。固定テンプレートとFFmpegを配布物へ含め、書き込みデータは配布リソースから分離してください。通常のPython環境がないWindows環境で起動・監視・安全停止を検証し、依存ライセンスと再現可能なビルド定義を整えてください。GitHub Actions、タグ、Release公開はまだ行わず、まずローカル`onedir`成果物を完成させて結果を報告してください。
