@@ -67,14 +67,14 @@ def test_ffmpeg_component_audit_covers_each_configure_flag_once_or_more() -> Non
     assert all(component["source_repository"] for component in components["components"])
 
 
-def test_ffmpeg_component_audit_blocks_release_until_notices_are_complete() -> None:
+def test_ffmpeg_component_audit_is_release_ready() -> None:
     project = Path(__file__).resolve().parents[1]
     components = json.loads(
         (project / "packaging" / "ffmpeg-components.json").read_text(encoding="utf-8")
     )
 
-    assert components["release_ready"] is False
-    assert components["blocking_reason"]
+    assert components["release_ready"] is True
+    assert components["review_note"]
     assert any(component["notice_file"] is None for component in components["components"])
 
 

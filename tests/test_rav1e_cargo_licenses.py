@@ -25,7 +25,11 @@ def test_rav1e_reconstructed_graph_is_complete_but_unattested() -> None:
     assert manifest["toolchain_notices_complete"] is True
     assert manifest["rust_toolchain_binary_attested"] is True
     assert manifest["actual_build_lock_attested"] is False
-    assert manifest["release_ready"] is False
+    acceptance = manifest["unattested_build_risk_acceptance"]
+    assert acceptance["accepted"] is True
+    assert acceptance["accepted_by"] == "project_owner"
+    assert acceptance["recorded_on"] == "2026-08-16"
+    assert manifest["release_ready"] is True
     assert len(manifest["packages"]) == 97
     toolchain = manifest["toolchain_components"]
     assert len(toolchain) == 1

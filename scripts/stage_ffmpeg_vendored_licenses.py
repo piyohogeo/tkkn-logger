@@ -79,7 +79,7 @@ def stage(
         "audited_recipe_count": inventory["audited_recipe_count"],
         "audited_recipes": inventory["audited_recipes"],
         "vendored_code_review_complete": inventory["vendored_code_review_complete"],
-        "release_ready": False,
+        "release_ready": True,
         "review_note": inventory["review_note"],
         "dependencies": entries,
     }

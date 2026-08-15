@@ -16,6 +16,7 @@ def make_release(
     *,
     vendored_complete: bool = True,
     rav1e_attested: bool = True,
+    rav1e_risk_accepted: bool = False,
 ) -> Path:
     release = tmp_path / "release"
     release.mkdir()
@@ -68,7 +69,11 @@ def make_release(
     rust_toolchain_license = b"rust-toolchain-license"
     rav1e_lock = b"rav1e-lock"
     rav1e_manifest = {
+        "release_ready": True,
         "actual_build_lock_attested": rav1e_attested,
+        "unattested_build_risk_acceptance": {
+            "accepted": rav1e_risk_accepted,
+        },
         "source_lock_sha256": hashlib.sha256(rav1e_lock).hexdigest(),
         "toolchain_notices_complete": True,
         "packages": [
@@ -174,6 +179,16 @@ def test_release_artifacts_reject_unattested_rav1e_lock(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="unattested rav1e"):
         verify_release(release, "0.1.0")
+
+
+def test_release_artifacts_accept_documented_rav1e_risk(tmp_path: Path) -> None:
+    release = make_release(
+        tmp_path,
+        rav1e_attested=False,
+        rav1e_risk_accepted=True,
+    )
+
+    verify_release(release, "0.1.0")
 
 
 def test_release_artifacts_reject_unsafe_zip_paths(tmp_path: Path) -> None:

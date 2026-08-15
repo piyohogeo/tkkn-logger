@@ -20,7 +20,7 @@ def test_vendored_inventory_is_complete() -> None:
     assert inventory["audited_recipe_count"] == len(inventory["audited_recipes"])
     assert inventory["audited_recipes"] == sorted(set(inventory["audited_recipes"]))
     assert inventory["vendored_code_review_complete"] is True
-    assert inventory["release_ready"] is False
+    assert inventory["release_ready"] is True
     assert {item["classification"] for item in inventory["dependencies"]} == {
         "linked",
         "excluded",
@@ -35,7 +35,7 @@ def test_vendored_license_hashes_and_classifications() -> None:
         )
     )
     assert notices["vendored_code_review_complete"] is True
-    assert notices["release_ready"] is False
+    assert notices["release_ready"] is True
     assert notices["audited_recipe_count"] == len(notices["audited_recipes"])
     for dependency in notices["dependencies"]:
         files = dependency["license_files"]

@@ -82,8 +82,8 @@
     "zvbi"
   ],
   "vendored_code_review_complete": true,
-  "release_ready": false,
-  "review_note": "All seventy-seven fixed recipe source trees have been audited for vendored-code paths. Linked notices are staged; overall release readiness remains subject to the remaining audit and release gates.",
+  "release_ready": true,
+  "review_note": "All seventy-seven fixed recipe source trees have been audited for vendored-code paths and all linked notices are staged.",
   "dependencies": [
     {
       "id": "openal-fmt",

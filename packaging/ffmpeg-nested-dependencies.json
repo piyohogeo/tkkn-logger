@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
-  "release_ready": false,
+  "release_ready": true,
   "review_note": "Nested sources explicitly fetched by selected BtbN recipes. linked and linked_generated entries require distribution notices; build_tool and excluded entries document reviewed non-linked sources.",
   "recipes": [
     {"recipe":"shaderc/glslang","parent_recipe":"scripts.d/47-vulkan/50-shaderc.sh","repository":"https://github.com/KhronosGroup/glslang.git","revision":"ce138e2c2d6992b31ff4cd2e955904637785a881","classification":"linked","evidence":"SHADERC_SKIP_TESTS=ON; third_party/CMakeLists.txt always adds glslang"},

@@ -3,7 +3,7 @@
   "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
   "linked_nested_notices_complete": true,
   "vendored_code_review_complete": true,
-  "release_ready": false,
+  "release_ready": true,
   "review_note": "Root notices are staged for explicitly fetched linked nested sources, and the separate fixed-recipe vendored-code review is complete.",
   "dependencies": [
     {

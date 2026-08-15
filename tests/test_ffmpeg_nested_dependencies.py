@@ -15,7 +15,7 @@ def test_nested_dependency_inventory_has_fixed_revisions_and_classifications() -
     )
     entries = {entry["recipe"]: entry for entry in inventory["recipes"]}
 
-    assert inventory["release_ready"] is False
+    assert inventory["release_ready"] is True
     assert len(entries) == len(inventory["recipes"])
     assert all(len(entry["revision"]) == 40 for entry in entries.values())
     assert {entry["classification"] for entry in entries.values()} == {

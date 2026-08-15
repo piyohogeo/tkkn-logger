@@ -25,7 +25,7 @@ def test_linked_nested_dependencies_have_staged_notices() -> None:
 
     assert notices["linked_nested_notices_complete"] is True
     assert notices["vendored_code_review_complete"] is True
-    assert notices["release_ready"] is False
+    assert notices["release_ready"] is True
     for dependency in inventory["recipes"]:
         staged = by_name[dependency["recipe"]]["license_files"]
         if dependency["classification"] in {"linked", "linked_generated"}:

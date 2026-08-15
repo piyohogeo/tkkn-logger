@@ -262,7 +262,16 @@ def stage(
         "toolchain_notices_complete": bool(toolchain_entries),
         "rust_toolchain_binary_attested": True,
         "actual_build_lock_attested": False,
-        "release_ready": False,
+        "unattested_build_risk_acceptance": {
+            "accepted": True,
+            "accepted_by": "project_owner",
+            "recorded_on": "2026-08-16",
+            "scope": (
+                "Accept the reconstructed rav1e Cargo graph and unpinned cargo-c "
+                "version as a documented v0.1.0 release limitation."
+            ),
+        },
+        "release_ready": True,
         "review_note": (
             "The distributed ffmpeg.exe attests Rust 1.97.1 commit 8bab26f and "
             "contains standard-library dependency paths covered by the staged "
@@ -274,9 +283,8 @@ def stage(
         "packages": entries,
         "toolchain_components": toolchain_entries,
     }
-    manifest_path.write_text(
-        json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    with manifest_path.open("w", encoding="utf-8", newline="\n") as manifest_file:
+        manifest_file.write(json.dumps(result, ensure_ascii=False, indent=2) + "\n")
     return result
 
 

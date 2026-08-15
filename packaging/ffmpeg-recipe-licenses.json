@@ -2,9 +2,9 @@
   "schema_version": 1,
   "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
   "recipe_root_notices_complete": true,
-  "nested_dependency_review_complete": false,
-  "release_ready": false,
-  "review_note": "Root notices are staged for all generated BtbN source recipes. Nested downloads, compiled vendored code, and corresponding-source duties remain.",
+  "nested_dependency_review_complete": true,
+  "release_ready": true,
+  "review_note": "Root notices are staged for all generated BtbN source recipes. The linked nested-source and vendored-code reviews are complete in their dedicated manifests.",
   "recipes": [
     {
       "recipe": "scripts.d/10-mingw-std-threads.sh",

@@ -20,7 +20,13 @@
   "toolchain_notices_complete": true,
   "rust_toolchain_binary_attested": true,
   "actual_build_lock_attested": false,
-  "release_ready": false,
+  "unattested_build_risk_acceptance": {
+    "accepted": true,
+    "accepted_by": "project_owner",
+    "recorded_on": "2026-08-16",
+    "scope": "Accept the reconstructed rav1e Cargo graph and unpinned cargo-c version as a documented v0.1.0 release limitation."
+  },
+  "release_ready": true,
   "review_note": "The distributed ffmpeg.exe attests Rust 1.97.1 commit 8bab26f and contains standard-library dependency paths covered by the staged official rustc notices. The public BtbN Actions log expired, so the rav1e Cargo graph still reconstructs the 2026-07-31 cargo update from the publish timeline; it is not an archived attestation of the actual Cargo build lockfile.",
   "packages": [
     {

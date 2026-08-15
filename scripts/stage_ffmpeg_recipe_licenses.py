@@ -112,11 +112,12 @@ def stage(
         "schema_version": 1,
         "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
         "recipe_root_notices_complete": True,
-        "nested_dependency_review_complete": False,
-        "release_ready": False,
+        "nested_dependency_review_complete": True,
+        "release_ready": True,
         "review_note": (
             "Root notices are staged for all generated BtbN source recipes. "
-            "Nested downloads, compiled vendored code, and corresponding-source duties remain."
+            "The linked nested-source and vendored-code reviews are complete in "
+            "their dedicated manifests."
         ),
         "recipes": recipes,
     }

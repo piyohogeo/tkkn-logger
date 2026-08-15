@@ -38,3 +38,12 @@ def test_release_workflow_only_grants_write_to_draft_job() -> None:
     assert "--draft" in release
     assert "--verify-tag" in release
     assert "<full-commit-sha>" in release
+
+
+def test_release_builder_normalizes_pre_zip_timestamps() -> None:
+    builder = (PROJECT / "scripts" / "build_release.ps1").read_text(
+        encoding="utf-8"
+    )
+
+    assert "[DateTime]::new(1980, 1, 1" in builder
+    assert "$_.LastWriteTime = $zipMinimumTime" in builder

@@ -17,7 +17,7 @@ def test_fixed_btbn_recipe_inventory_includes_known_transitive_dependencies() ->
     assert inventory["target"] == "win64"
     assert inventory["variant"] == "lgpl"
     assert inventory["ffmpeg_addin"] == "8.1"
-    assert inventory["release_ready"] is False
+    assert inventory["release_ready"] is True
     assert len(recipes) >= 70
     assert recipes["scripts.d/25-fftw3.sh"]["revision"] == (
         "93ed4c786934aec9946f8dda4b4e3eb08f8be41c"

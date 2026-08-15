@@ -2,9 +2,9 @@
   "schema_version": 1,
   "ffmpeg_build": "n8.1.2-34-g9b6c8969e0",
   "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
-  "audit_scope": "Direct external components enabled in ffmpeg.exe configure output; transitive static dependencies and exact notice texts require final verification.",
-  "release_ready": false,
-  "blocking_reason": "The BtbN binary archive contains FFmpeg's LGPL text but does not contain the copyright notices and license texts for all statically linked external components.",
+  "audit_scope": "Direct external components enabled in ffmpeg.exe configure output, supplemented by fixed recipe, nested-source, vendored-code, Cargo, and Rust toolchain notice manifests.",
+  "release_ready": true,
+  "review_note": "The portable LICENSES directory supplements the BtbN archive with the reviewed root, nested, vendored, Cargo, and Rust toolchain notices.",
   "non_component_enable_flags": ["version3", "pthreads"],
   "audited_configure_flags": [
     "iconv", "zlib", "libxml2", "libvmaf", "fontconfig", "libharfbuzz", "libfreetype", "libfribidi", "vulkan", "libshaderc", "libvorbis", "gmp", "lzma", "liblcevc-dec", "opencl", "amf", "libaom", "libaribb24", "chromaprint", "libdav1d", "ffnvcodec", "cuda-llvm", "libgme", "libkvazaar", "libaribcaption", "libass", "libbluray", "libjxl", "libmp3lame", "libopus", "libplacebo", "librist", "libssh", "libtheora", "libvpx", "libwebp", "libzmq", "lv2", "libvpl", "openal", "liboapv", "libopencore-amrnb", "libopencore-amrwb", "libopenh264", "libopenjpeg", "libopenmpt", "librav1e", "schannel", "sdl2", "libsnappy", "libsoxr", "libsrt", "libsvtav1", "libtwolame", "libuavs3d", "vaapi", "libvvenc", "libzimg", "libzvbi"

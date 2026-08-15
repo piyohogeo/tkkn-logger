@@ -126,10 +126,11 @@ def main() -> int:
         "ffmpeg_addin": "8.1",
         "btbn_build_revision": "a99e8230eae00d1cee38f23076a7a1f55cd984e2",
         "generation_command": "./generate.sh win64 lgpl 8.1",
-        "release_ready": False,
+        "release_ready": True,
         "review_note": (
-            "Every source recipe used by the generated build graph must be classified; "
-            "recipes may also download nested source dependencies."
+            "All 77 source recipes and their additional acquisitions are fixed and "
+            "classified; linked nested and vendored notices are staged in their "
+            "dedicated manifests."
         ),
         "recipes": entries,
         "additional_sources": additional_sources,

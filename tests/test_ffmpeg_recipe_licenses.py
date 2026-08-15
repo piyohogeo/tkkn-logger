@@ -27,8 +27,8 @@ def test_every_btbn_source_recipe_has_staged_root_notices() -> None:
     actual = {entry["recipe"] for entry in notices["recipes"]}
     assert actual == expected
     assert notices["recipe_root_notices_complete"] is True
-    assert notices["nested_dependency_review_complete"] is False
-    assert notices["release_ready"] is False
+    assert notices["nested_dependency_review_complete"] is True
+    assert notices["release_ready"] is True
     assert all(entry["license_files"] for entry in notices["recipes"])
 
 

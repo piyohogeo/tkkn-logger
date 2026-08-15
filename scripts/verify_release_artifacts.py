@@ -147,8 +147,19 @@ def verify_release(release_dir: Path, version: str, expected_tag: str | None = N
         rav1e_manifest = json.loads(
             package.read("Tokkun99Logger/LICENSES/RAV1E-CARGO-LICENSES.json")
         )
-        if rav1e_manifest["actual_build_lock_attested"] is not True:
-            raise ValueError("Release ZIP has an unattested rav1e Cargo lockfile")
+        if rav1e_manifest.get("release_ready") is not True:
+            raise ValueError("Release ZIP has a non-release-ready rav1e manifest")
+        risk_acceptance = rav1e_manifest.get(
+            "unattested_build_risk_acceptance", {}
+        )
+        if (
+            rav1e_manifest["actual_build_lock_attested"] is not True
+            and risk_acceptance.get("accepted") is not True
+        ):
+            raise ValueError(
+                "Release ZIP has an unattested rav1e Cargo lockfile without "
+                "documented risk acceptance"
+            )
         if bytes_sha256(
             package.read("Tokkun99Logger/LICENSES/RAV1E-Cargo.lock")
         ) != rav1e_manifest["source_lock_sha256"]:

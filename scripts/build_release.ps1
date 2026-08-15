@@ -49,8 +49,11 @@ if ($additionalSourceManifest.release_ready -ne $true) {
     throw "FFmpeg multi-source recipe review is incomplete; refusing to build Release artifacts"
 }
 $rav1eCargoManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $rav1eCargoManifestPath | ConvertFrom-Json
-if ($rav1eCargoManifest.release_ready -ne $true -or $rav1eCargoManifest.actual_build_lock_attested -ne $true) {
-    throw "rav1e Cargo dependency attestation is incomplete; refusing to build Release artifacts"
+$rav1eRiskAccepted = $rav1eCargoManifest.unattested_build_risk_acceptance.accepted -eq $true
+if ($rav1eCargoManifest.release_ready -ne $true -or (
+    $rav1eCargoManifest.actual_build_lock_attested -ne $true -and -not $rav1eRiskAccepted
+)) {
+    throw "rav1e Cargo dependency attestation is incomplete and its documented risk has not been accepted; refusing to build Release artifacts"
 }
 if (-not [string]::IsNullOrWhiteSpace($ExpectedTag) -and $ExpectedTag -ne "v$Version") {
     throw "Tag $ExpectedTag does not match application version $Version"
@@ -88,6 +91,14 @@ foreach ($output in @($archivePath, $checksumPath)) {
         throw "Refusing to replace a path outside the Release directory: $fullOutput"
     }
     if (Test-Path -LiteralPath $fullOutput) { Remove-Item -LiteralPath $fullOutput -Force }
+}
+$zipMinimumTime = [DateTime]::new(1980, 1, 1, 0, 0, 0, [DateTimeKind]::Local)
+Get-ChildItem -LiteralPath $appRoot -Recurse -File | Where-Object {
+    $_.LastWriteTime -lt $zipMinimumTime
+} | ForEach-Object {
+    # Some crates preserve pre-1980 archive timestamps, which ZIP cannot encode.
+    # Normalize only the disposable Release staging copy; source files are untouched.
+    $_.LastWriteTime = $zipMinimumTime
 }
 Compress-Archive -LiteralPath $appRoot -DestinationPath $archivePath -CompressionLevel Optimal
 $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archivePath).Hash.ToLowerInvariant()

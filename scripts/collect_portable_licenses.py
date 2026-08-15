@@ -219,6 +219,8 @@ def write_notices(
             f"{rav1e_cargo_licenses['notices_complete_for_reconstructed_graph']}",
             "  rav1e actual build lock attested: "
             f"{rav1e_cargo_licenses['actual_build_lock_attested']}",
+            "  rav1e unattested build risk accepted: "
+            f"{rav1e_cargo_licenses['unattested_build_risk_acceptance']['accepted']}",
             "  See FFmpeg-COMPONENTS.json and FFmpeg-BUILD-RECIPES.json for fixed revisions",
             "  and unresolved notice files, including transitive build dependencies.",
         ]

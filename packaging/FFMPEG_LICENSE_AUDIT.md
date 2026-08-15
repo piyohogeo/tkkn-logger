@@ -214,18 +214,19 @@ plus standard-library paths for `addr2line` 0.25.1, `gimli` 0.32.3, `object`
 rav1e's Cargo lock. The official x86_64-pc-windows-gnu rustc archive was checked
 against its published SHA-256, and its standard-library copyright report plus
 four applicable notice files are staged, bringing the rav1e bundle to 85 files.
-Release remains blocked because the expired Actions log prevents attesting the
-reconstructed Cargo graph as the exact build lockfile, and because the `cargo-c`
-build-tool version was not pinned by BtbN.
+The expired Actions log still prevents attesting the reconstructed Cargo graph
+as the exact build lockfile, and the `cargo-c` build-tool version was not pinned
+by BtbN. The project owner accepted those two documented uncertainties for the
+v0.1.0 Release on 2026-08-16; the manifest retains
+`actual_build_lock_attested: false` and records that acceptance separately.
 
 ## Release gate
 
-The component, recipe, nested-source, vendored-code, and rav1e Cargo manifests
-intentionally keep `release_ready` set to `false` while any overall release
-gate remains open. The vendored-code review itself is complete; the remaining
-gates include exact rav1e build-lock attestation, the unpinned `cargo-c` build
-tool, corresponding-source references, and final Release-asset verification.
-`scripts/build_release.ps1` refuses to produce Release assets while that value
-is false. The gate may be changed only after required notices, license texts,
-corresponding-source references, and nested compiled dependencies have been
-reviewed and included in the portable `LICENSES/` directory.
+The component, recipe, nested-source, vendored-code, additional-source, and
+rav1e notice manifests are release-ready. Required notices, fixed source
+references, and reviewed nested compiled dependencies are included in the
+portable `LICENSES/` directory. `scripts/build_release.ps1` still refuses to
+produce Release assets if any review becomes incomplete. An unattested rav1e
+lock is accepted only when its explicit risk-acceptance record is present; the
+underlying attestation field is never changed to claim evidence that does not
+exist. Final Release-asset and user smoke verification remain procedural gates.
