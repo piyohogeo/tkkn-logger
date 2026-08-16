@@ -1,0 +1,9 @@
+# License-audit inputs are hashed byte-for-byte. Preserve the repository bytes
+# on every platform so Windows checkout settings cannot rewrite line endings.
+packaging/ffmpeg-nested-licenses/** -text
+packaging/ffmpeg-recipe-licenses/** -text
+packaging/ffmpeg-vendored-licenses/** -text
+packaging/ffmpeg-vendored-license-overrides/** -text
+packaging/rav1e-cargo-licenses/** -text
+packaging/rav1e-cargo-license-overrides/** -text
+packaging/rav1e-Cargo.lock -text
