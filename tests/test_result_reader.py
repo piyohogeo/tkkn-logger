@@ -18,6 +18,7 @@ from tokkun99_logger.result_reader import (
     has_decimal_at,
     is_auxiliary_time_row,
     is_centered_digit_run,
+    normalize_glyph,
     select_survival_components,
     text_core_mask,
     translation_tolerant_dice,
@@ -50,6 +51,28 @@ def test_extract_glyphs_orders_digit_decimal_digit() -> None:
 
     assert len(glyphs) == 3
     assert [int(np.count_nonzero(glyph)) for glyph in glyphs] == [39, 4, 52]
+
+
+@pytest.mark.parametrize(
+    ("glyph_height", "expected_bottom_padding"),
+    [(13, 2), (16, 2), (17, 1), (18, 0)],
+)
+def test_normalize_glyph_reduces_bottom_padding_for_tall_components(
+    glyph_height: int, expected_bottom_padding: int
+) -> None:
+    glyph = np.ones((glyph_height, 10), dtype=bool)
+
+    normalized = normalize_glyph(glyph)
+
+    assert normalized.shape == (18, 12)
+    assert np.count_nonzero(normalized) == glyph_height * 10
+    if expected_bottom_padding:
+        assert not normalized[-expected_bottom_padding:].any()
+
+
+def test_normalize_glyph_rejects_component_taller_than_canvas() -> None:
+    with pytest.raises(ValueError, match="does not fit canvas"):
+        normalize_glyph(np.ones((19, 10), dtype=bool))
 
 
 def test_digit_slot_separates_digit_from_touching_suffix() -> None:

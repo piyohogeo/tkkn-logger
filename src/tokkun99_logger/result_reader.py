@@ -97,7 +97,8 @@ def normalize_glyph(glyph: np.ndarray, size: tuple[int, int] = (12, 18)) -> np.n
         raise ValueError(f"Glyph {glyph.shape} does not fit canvas {(height, width)}")
     canvas = np.zeros((height, width), dtype=bool)
     left = (width - glyph_width) // 2
-    bottom = height - 2
+    bottom_padding = min(2, height - glyph_height)
+    bottom = height - bottom_padding
     top = bottom - glyph_height
     canvas[top:bottom, left : left + glyph_width] = glyph.astype(bool)
     return canvas

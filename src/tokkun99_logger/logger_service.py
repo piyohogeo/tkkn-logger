@@ -198,6 +198,25 @@ class LoggerService:
                     incomplete=True,
                 )
 
+            def finish_orphaned_video() -> None:
+                """Quarantine an active recording whose run metadata was already lost."""
+                if not recorder.active:
+                    return
+                orphaned_run_id = str(uuid.uuid4())
+                orphaned_started_at = now_iso()
+                incomplete_stem = artifact_stem(
+                    None, orphaned_started_at, orphaned_run_id
+                )
+                incomplete = layout.videos / "incomplete" / f"{incomplete_stem}.mp4"
+                recorder.finalize_incomplete(incomplete)
+                self.emit(
+                    "recording_finished",
+                    "run情報のない残存録画を途中終了動画として確定しました",
+                    run_id=orphaned_run_id,
+                    incomplete=True,
+                    orphaned=True,
+                )
+
             def persist_current(status: str) -> None:
                 nonlocal current, consensus, completed_runs, result_started_elapsed
                 if current is None:
@@ -363,6 +382,8 @@ class LoggerService:
                             if current is not None:
                                 finish_active_video()
                                 persist_current("incomplete")
+                            elif recorder.active:
+                                finish_orphaned_video()
                             run_id = str(uuid.uuid4())
                             started_at = now_iso()
                             pending_stem = artifact_stem(None, started_at, run_id)
@@ -409,6 +430,7 @@ class LoggerService:
                                     incomplete=False,
                                 )
                         elif observation.state == GameState.TITLE and current is not None:
+                            finish_active_video()
                             complete = (
                                 current.video_finalized
                                 and current.survival_ms is not None

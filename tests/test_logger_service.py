@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import threading
+from types import SimpleNamespace
 
 import pytest
 
@@ -8,6 +9,7 @@ from tokkun99_logger.app_paths import AppPaths
 from tokkun99_logger.capture import TargetWindowUnavailable
 from tokkun99_logger.config import LoggerConfig
 from tokkun99_logger.logger_service import LoggerService
+from tokkun99_logger.state_detector import GameState, Observation, StateScores
 
 
 def service(tmp_path, events) -> LoggerService:
@@ -176,3 +178,160 @@ def test_zero_duration_startup_closes_capture_and_lock(tmp_path, monkeypatch) ->
     assert closed == [True]
     assert released == [True]
     assert "target_found" in [event.kind for event in events]
+
+
+def _run_state_sequence(
+    tmp_path,
+    monkeypatch,
+    states: list[GameState],
+    *,
+    recorder_initially_active: bool = False,
+):
+    events = []
+    recorders = []
+    service = LoggerService(
+        LoggerConfig(fps=1000),
+        AppPaths(tmp_path / "template", tmp_path / "data", tmp_path / "ffmpeg.exe"),
+        events.append,
+    )
+
+    class FakeLock:
+        def __init__(self, _path) -> None:
+            pass
+
+        def acquire(self) -> None:
+            pass
+
+        def release(self) -> None:
+            pass
+
+    class FakeStorage:
+        def __init__(self, *_args) -> None:
+            pass
+
+        def initialize(self) -> None:
+            pass
+
+        def finalize_run(self, _finalization):
+            return SimpleNamespace(is_survival_record=False, is_bullet_record=False)
+
+    class FakeCapture:
+        def __init__(self) -> None:
+            self.grabs = 0
+
+        def grab(self) -> bytes:
+            self.grabs += 1
+            if self.grabs == len(states):
+                service.request_stop()
+            return bytes(320 * 240 * 4)
+
+        def close(self) -> None:
+            pass
+
+    class FakeDetector:
+        def __init__(self) -> None:
+            self.index = 0
+
+        def observe(self, _image) -> Observation:
+            state = states[self.index]
+            self.index += 1
+            return Observation(
+                state=state,
+                candidate=state,
+                candidate_frames=3,
+                scores=StateScores(title=0.0, result=0.0),
+                changed=True,
+            )
+
+    class FakeRecorder:
+        def __init__(self, **_kwargs) -> None:
+            self.active = recorder_initially_active
+            self.paused = False
+            self.frames_written = 0
+            self.starts = []
+            self.incomplete = []
+            recorders.append(self)
+
+        def observe(self, _frame: bytes) -> None:
+            pass
+
+        def clear_pre_roll(self) -> None:
+            pass
+
+        def start(self, path) -> None:
+            if self.active:
+                raise RuntimeError("recorder started twice")
+            self.active = True
+            self.starts.append(path)
+
+        def finalize_incomplete(self, path):
+            assert self.active
+            self.active = False
+            self.incomplete.append(path)
+            return path
+
+    class FakeWindow:
+        hwnd = 1
+        client_size = (320, 240)
+        client_origin = (0, 0)
+
+    monkeypatch.setattr("tokkun99_logger.app_paths.AppPaths.validate", lambda _self: None)
+    monkeypatch.setattr("tokkun99_logger.logger_service.InstanceLock", FakeLock)
+    monkeypatch.setattr("tokkun99_logger.logger_service.Storage", FakeStorage)
+    monkeypatch.setattr(
+        "tokkun99_logger.logger_service.recover_partial_videos",
+        lambda _root: SimpleNamespace(recovered=()),
+    )
+    monkeypatch.setattr(
+        "tokkun99_logger.logger_service.ensure_disk_capacity",
+        lambda *_a, **_k: None,
+    )
+    monkeypatch.setattr(
+        "tokkun99_logger.logger_service.MessageCollector",
+        lambda _storage: object(),
+    )
+    monkeypatch.setattr("tokkun99_logger.logger_service.ResultReader", lambda _path: object())
+    monkeypatch.setattr("tokkun99_logger.logger_service.StateClassifier", lambda _path: object())
+    monkeypatch.setattr(
+        "tokkun99_logger.logger_service.DebouncedStateDetector",
+        lambda *_a, **_k: FakeDetector(),
+    )
+    monkeypatch.setattr("tokkun99_logger.logger_service.RunRecorder", FakeRecorder)
+    monkeypatch.setattr("tokkun99_logger.logger_service.locate_window", lambda: FakeWindow())
+    monkeypatch.setattr("tokkun99_logger.logger_service.create_capture", lambda *_a: FakeCapture())
+
+    result = service.run()
+    return result, events, recorders[0]
+
+
+def test_title_transition_finalizes_recording_before_next_playing(
+    tmp_path, monkeypatch
+) -> None:
+    result, _events, recorder = _run_state_sequence(
+        tmp_path,
+        monkeypatch,
+        [GameState.TITLE, GameState.PLAYING, GameState.TITLE, GameState.PLAYING],
+    )
+
+    assert result == 0
+    assert len(recorder.starts) == 2
+    assert len(recorder.incomplete) == 2
+
+
+def test_playing_transition_quarantines_orphaned_active_recording(
+    tmp_path, monkeypatch
+) -> None:
+    result, events, recorder = _run_state_sequence(
+        tmp_path,
+        monkeypatch,
+        [GameState.PLAYING],
+        recorder_initially_active=True,
+    )
+
+    assert result == 0
+    assert len(recorder.starts) == 1
+    assert len(recorder.incomplete) == 2
+    assert any(
+        event.kind == "recording_finished" and event.data.get("orphaned") is True
+        for event in events
+    )
